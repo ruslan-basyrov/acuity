@@ -1,0 +1,61 @@
+---
+title: "Acuity"
+subtitle: "Opinionated Quarto template inspired by Edward Tufte's principles"
+author: "Ruslan Basyrov"
+format: 
+  acuity-typst:
+    keep-typ: true
+---
+
+
+## Semantic Color Testing
+
+This section tests how Quarto maps semantic colors from `_brand.yaml` to standard document elements like callouts.
+
+::: {.callout-note}
+**Info Color:** cyan / `#88CCEE`.
+:::
+
+::: {.callout-tip}
+**Success Color:** green / `#117733`.
+:::
+
+::: {.callout-warning}
+**Warning Color:** sand / `#DDCC77`.
+:::
+
+::: {.callout-important}
+**Danger Color:** wine / `#882255`.
+:::
+
+
+## Raw Palette Swatches
+
+[Paul Tol's color palette](https://sronpersonalpages.nl/~pault/):
+
+```{=typst}
+#let swatch(hex, name, text-color: white) = block(
+  fill: rgb(hex), 
+  width: 100%, 
+  height: 2.5em, 
+  radius: 4pt,
+  align(center + horizon)[#text(fill: text-color, weight: "bold", font: "Roboto")[#name]]
+)
+
+#grid(
+  columns: (1fr, 1fr, 1fr),
+  gutter: 10pt,
+  swatch("#CC6677", "Rose (Secondary)"),
+  swatch("#332288", "Blue (Primary)"),
+  swatch("#DDCC77", "Sand (Warning)", text-color: black),
+  swatch("#117733", "Green (Success)"),
+  swatch("#88CCEE", "Cyan (Info)", text-color: black),
+  swatch("#882255", "Wine (Danger)"),
+  swatch("#44AA99", "Teal"),
+  swatch("#999933", "Olive"),
+  swatch("#AA4499", "Purple"),
+  swatch("#DDDDDD", "Gray (Bad Data)", text-color: black)
+)
+```
+
+{{< lipsum 1 >}}

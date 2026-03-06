@@ -1,0 +1,13 @@
+# Quarto artifacts
+.quarto
+
+# Results of compilation
+*.pdf
+*.html
+
+# Build artifacts
+template_files/
+template.typ
+
+# Other
+**/.DS_Store

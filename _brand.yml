@@ -1,0 +1,38 @@
+meta:
+  name: Acuity
+typography:
+  fonts:
+    - family: Atkinson Hyperlegible
+      source: google
+    - family: Roboto
+      source: google
+  # Base font with improved legibility and readability (https://www.brailleinstitute.org/freefont/)
+  base: Atkinson Hyperlegible
+  headings: Roboto
+
+# Paul Tol's color palette for colour-blind people (https://sronpersonalpages.nl/~pault/)
+color:
+  palette:
+    rose: "#CC6677"
+    blue: "#332288"
+    sand: "#DDCC77"
+    green: "#117733"
+    cyan: "#88CCEE"
+    wine: "#882255"
+    teal: "#44AA99"
+    olive: "#999933"
+    purple: "#AA4499"
+    gray: "#DDDDDD"
+    black: "#000000"
+    white: "#FFFFFF"
+  primary: blue
+  secondary: rose
+  tertiary: teal
+  success: green
+  info: cyan
+  warning: sand
+  danger: wine
+  light: gray
+  dark: black
+  foreground: black
+  background: white
