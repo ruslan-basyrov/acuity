@@ -1,14 +1,12 @@
 meta:
   name: Acuity
 typography:
+  # Font with improved legibility and readability (https://www.brailleinstitute.org/freefont/)
   fonts:
-    - family: Atkinson Hyperlegible
+    - family: Atkinson Hyperlegible Next
       source: google
-    - family: Roboto
-      source: google
-  # Base font with improved legibility and readability (https://www.brailleinstitute.org/freefont/)
-  base: Atkinson Hyperlegible
-  headings: Roboto
+  base: Atkinson Hyperlegible Next
+  headings: Atkinson Hyperlegible Next
 
 # Paul Tol's color palette for colour-blind people (https://sronpersonalpages.nl/~pault/)
 color:

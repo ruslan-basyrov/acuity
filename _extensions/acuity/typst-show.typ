@@ -29,9 +29,6 @@ $if(abstract)$
   abstract: [$abstract$],
   abstract-title: "$labels.abstract$",
 $endif$
-$if(margin)$
-  margin: ($for(margin/pairs)$$margin.key$: $margin.value$,$endfor$),
-$endif$
 $if(papersize)$
   paper: "$papersize$",
 $endif$
@@ -68,7 +65,6 @@ $endif$
 $if(section-numbering)$
   sectionnumbering: "$section-numbering$",
 $endif$
-  pagenumbering: $if(page-numbering)$"$page-numbering$"$else$none$endif$,
 $if(toc)$
   toc: $toc$,
 $endif$
@@ -79,6 +75,5 @@ $if(toc-indent)$
   toc_indent: $toc-indent$,
 $endif$
   toc_depth: $toc-depth$,
-  cols: $if(columns)$$columns$$else$1$endif$,
   doc,
 )

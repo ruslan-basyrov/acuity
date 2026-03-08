@@ -5,21 +5,19 @@
   date: none,
   abstract: none,
   abstract-title: none,
-  cols: 1,
   paper: "a4",
   lang: "en",
   region: "GB",
-  font: "libertinus serif",
+  font: none,
   fontsize: 10pt,
   title-size: 1.5em,
   subtitle-size: 1.25em,
-  heading-family: "libertinus serif",
+  heading-family: none,
   heading-weight: "bold",
-  heading-style: "normal",
+  heading-style: "italic",
   heading-color: black,
   heading-line-height: 0.65em,
   sectionnumbering: none,
-  pagenumbering: "1",
   toc: false,
   toc_title: none,
   toc_depth: none,
@@ -28,15 +26,22 @@
 ) = {
   set page(
     paper: paper,
-    numbering: pagenumbering,
     number-align: top + right,
+    margin: (
+      left: 25mm,
+      right: 89mm,
+      top: 25mm,
+      bottom: 25mm,
+    ),
   )
   set par(justify: true)
   set text(lang: lang,
            region: region,
            font: font,
            size: fontsize)
+  
   set heading(numbering: sectionnumbering)
+  
   if title != none {
     align(center)[#block(inset: 2em)[
       #set par(leading: heading-line-height)
@@ -101,15 +106,12 @@
     );
     ]
   }
-
-  if cols == 1 {
-    doc
-  } else {
-    columns(cols, doc)
-  }
+  
+  doc
 }
 
 #set table(
   inset: 6pt,
   stroke: none
 )
+#show heading: set text(style: "italic")
