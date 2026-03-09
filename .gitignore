@@ -6,8 +6,12 @@
 *.html
 
 # Build artifacts
+_acuity/
 template_files/
 template.typ
 
 # Other
 **/.DS_Store
+
+/.quarto/
+**/*.quarto_ipynb

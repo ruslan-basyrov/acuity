@@ -2,13 +2,65 @@
 title: "Acuity"
 subtitle: "Opinionated Quarto template inspired by Edward Tufte's principles"
 author: "Ruslan Basyrov"
-format: 
+format:
+  acuity-html:
+    default
   acuity-typst:
     keep-typ: true
+bibliography: bibliography.bib
 ---
 
+## Abstract
 
-## Semantic Color Testing
+{{< lipsum 1 >}}
+
+Test sidenote^[The tested sidenote is here.].
+
+# Font
+
+The template uses a single font with high legibility and readability: Atkinson Hyperlegible Next (@brailleinstituteAtkinsonHyperlegibleFont).
+
+
+# Color Palette
+
+[Paul Tol's color palette](https://sronpersonalpages.nl/~pault/), designed to be visible by color-blind people, is used to provide sensible defaults with high contrast:
+
+```{r}
+#| echo: false
+#| message: false
+#| fig-align: "center"
+
+# Implicitly read the palette from _brand.yml
+brand <- yaml::read_yaml("_brand.yml")
+pal <- unlist(brand$color$palette)
+
+# Prepare the data for a grid layout
+n_cols <- 4
+df <- data.frame(
+  name = names(pal),
+  hex = pal,
+  # Calculate grid positions
+  x = (seq_along(pal) - 1) %% n_cols,
+  y = -((seq_along(pal) - 1) %/% n_cols) 
+)
+
+# A compact grid visualization
+library(ggplot2)
+ggplot(df, aes(x = x, y = y, fill = hex)) +
+  geom_tile(color = "white", linewidth = 1) +
+  geom_text(
+    aes(label = sprintf("%s \n %s", name, hex)),
+    # Dynamically calculate brightness to make text black or white
+    color = ifelse(colSums(col2rgb(df$hex)) > 500, "black", "white"),
+    fontface = "bold",
+    size = 3.5
+  ) +
+  scale_fill_identity() +
+  theme_void() +
+  theme(plot.margin = margin(5, 5, 5, 5))
+```
+
+# Semantic Color Testing
 
 This section tests how Quarto maps semantic colors from `_brand.yaml` to standard document elements like callouts.
 
@@ -17,7 +69,7 @@ This section tests how Quarto maps semantic colors from `_brand.yaml` to standar
 :::
 
 ::: {.callout-tip}
-**Success Color:** green / `#117733`.
+**Success Color:** green / `{{< brand color green >}}`.
 :::
 
 ::: {.callout-warning}
@@ -27,35 +79,3 @@ This section tests how Quarto maps semantic colors from `_brand.yaml` to standar
 ::: {.callout-important}
 **Danger Color:** wine / `#882255`.
 :::
-
-
-## Raw Palette Swatches
-
-[Paul Tol's color palette](https://sronpersonalpages.nl/~pault/):
-
-```{=typst}
-#let swatch(hex, name, text-color: white) = block(
-  fill: rgb(hex), 
-  width: 100%, 
-  height: 2.5em, 
-  radius: 4pt,
-  align(center + horizon)[#text(fill: text-color, weight: "bold", font: "Roboto")[#name]]
-)
-
-#grid(
-  columns: (1fr, 1fr, 1fr),
-  gutter: 10pt,
-  swatch("#CC6677", "Rose (Secondary)"),
-  swatch("#332288", "Blue (Primary)"),
-  swatch("#DDCC77", "Sand (Warning)", text-color: black),
-  swatch("#117733", "Green (Success)"),
-  swatch("#88CCEE", "Cyan (Info)", text-color: black),
-  swatch("#882255", "Wine (Danger)"),
-  swatch("#44AA99", "Teal"),
-  swatch("#999933", "Olive"),
-  swatch("#AA4499", "Purple"),
-  swatch("#DDDDDD", "Gray (Bad Data)", text-color: black)
-)
-```
-
-{{< lipsum 1 >}}

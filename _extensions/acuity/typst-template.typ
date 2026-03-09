@@ -61,7 +61,7 @@
           text(weight: "bold", size: subtitle-size)[#subtitle]
         }
       }
-    ]//]
+    ]
   }
 
   if authors != none {
@@ -116,3 +116,10 @@
   stroke: none
 )
 #show heading: set text(style: "italic")
+
+#show heading.where(level: 1): it => {
+  pagebreak(weak: true)
+  v(2em, weak: true)
+  text(size: 14pt, weight: "bold", it)
+  v(1em, weak: true)
+}
