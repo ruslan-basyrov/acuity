@@ -10,8 +10,8 @@
   region: "GB",
   font: none,
   fontsize: 10pt,
-  title-size: 1.5em,
-  subtitle-size: 1.25em,
+  title-size: 2em,
+  subtitle-size: 1.5em,
   heading-family: none,
   heading-weight: "bold",
   heading-style: "italic",
@@ -43,7 +43,7 @@
   set heading(numbering: sectionnumbering)
   
   if title != none {
-    align(center)[#block(inset: 2em)[
+    align(left)[//#block(inset: 2em)[
       #set par(leading: heading-line-height)
       #if (heading-family != none or heading-weight != "bold" or heading-style != "normal"
            or heading-color != black or heading-decoration == "underline"
@@ -61,7 +61,7 @@
           text(weight: "bold", size: subtitle-size)[#subtitle]
         }
       }
-    ]]
+    ]//]
   }
 
   if authors != none {
@@ -71,7 +71,8 @@
       columns: (1fr,) * ncols,
       row-gutter: 1.5em,
       ..authors.map(author =>
-          align(center)[
+          align(left)[
+            #set text(size: 1.25em)
             #author.name \
             #author.affiliation \
             #author.email
