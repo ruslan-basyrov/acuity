@@ -10,11 +10,24 @@ format:
 bibliography: bibliography.bib
 ---
 
-## Abstract
+# Abstract
 
 {{< lipsum 1 >}}
 
 Test sidenote^[The tested sidenote is here.].
+
+# Wideblock Test
+
+## Text
+::: {.wideblock}
+{{< lipsum 1 >}}
+:::
+
+## Image
+::: {.wideblock}
+![This is a wide image spanning into the right margin](https://placehold.co/1100x400/88CCEE/black?text=Wide+Image+Test){#fig-wide-test}
+:::
+
 
 # Font
 
@@ -79,3 +92,5 @@ This section tests how Quarto maps semantic colors from `_brand.yaml` to standar
 ::: {.callout-important}
 **Danger Color:** wine / `#882255`.
 :::
+
+

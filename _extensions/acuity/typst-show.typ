@@ -1,3 +1,14 @@
+#import "@preview/marginalia:0.3.1": wideblock
+#import "@preview/marginalia:0.3.1" as marginalia
+
+#show: marginalia.setup.with(
+  inner: (far: 25mm, width: 0pt, sep: 0pt),     // Left margin
+  outer: (far: 25mm, width: 54mm, sep: 10mm),   // Right margin
+  top: 25mm,
+  bottom: 25mm,
+  book: false,
+)
+
 #show: doc => book(
 $if(title)$
   title: [$title$],

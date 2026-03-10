@@ -27,12 +27,6 @@
   set page(
     paper: paper,
     number-align: top + right,
-    margin: (
-      left: 25mm,
-      right: 89mm,
-      top: 25mm,
-      bottom: 25mm,
-    ),
   )
   set par(justify: true)
   set text(lang: lang,
@@ -43,7 +37,7 @@
   set heading(numbering: sectionnumbering)
   
   if title != none {
-    align(left)[//#block(inset: 2em)[
+    align(left)[
       #set par(leading: heading-line-height)
       #if (heading-family != none or heading-weight != "bold" or heading-style != "normal"
            or heading-color != black or heading-decoration == "underline"

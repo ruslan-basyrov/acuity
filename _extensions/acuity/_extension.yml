@@ -9,10 +9,12 @@ contributes:
       output-dir: _acuity
   formats:
     html:
+      filters:               
+        - wideblock.lua
       grid:
-        sidebar-width: 100px
-        margin-width: 250px
-        body-width: 650px
+        sidebar-width: 125px
+        body-width: 725px
+        margin-width: 325px
       toc: true
       toc-title: "Contents"
       toc-location: left
@@ -21,6 +23,8 @@ contributes:
       citation-location: margin
 
     typst:
+      filters:
+        - wideblock.lua
       template-partials:
         - typst-template.typ
         - typst-show.typ
