@@ -9,6 +9,16 @@
   book: false,
 )
 
+#show footnote: it => marginalia.note(
+  anchor-numbering: (..n) => super(numbering("1", ..n)),
+
+  numbering: (..n) => super(numbering("1", ..n)) + h(0.25em),
+
+  it.body
+)
+#show footnote.entry: none
+#set footnote.entry(separator: none)
+
 #show: doc => book(
 $if(title)$
   title: [$title$],
