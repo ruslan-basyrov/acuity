@@ -31,7 +31,9 @@ Test sidenote^[The tested sidenote is here.].
 
 # Font
 
-The template uses a single font with high legibility and readability: Atkinson Hyperlegible Next (@brailleinstituteAtkinsonHyperlegibleFont).
+The template uses a single font with high legibility and readability: Atkinson Hyperlegible Next (@AtkinsonHyperlegibleFont2019).
+
+Sidenote with a citation ^[Citations are expanded to full references in sidenotes, like this: @AtkinsonHyperlegibleFont2019].
 
 
 # Color Palette

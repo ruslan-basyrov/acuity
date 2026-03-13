@@ -9,15 +9,35 @@
   book: false,
 )
 
-#show footnote: it => marginalia.note(
-  anchor-numbering: (..n) => super(numbering("1", ..n)),
+// intercept footnote function with a sidenote function 
+// which works properly for citations in the note
+#show footnote: it => {
+  marginalia.note(
+    anchor-numbering: (..n) => super(numbering("1", ..n)),
+    numbering: (..n) => super(numbering("1", ..n)) + h(0.25em)
+  )[#{
+    show place: none 
+    
+    // expand a citation to the full reference right in the sidenote
+    show cite: c => {
+      let ref-target = c.at("target", default: c.at("key", default: none))
+      if c.at("form", default: "normal") != "full" {
+        cite(ref-target, form: "full")
+      } else {
+        c
+      }
+    }
 
-  numbering: (..n) => super(numbering("1", ..n)) + h(0.25em),
+    it.body
+  }]
+}
 
-  it.body
-)
+// remove the note as a footnote ...
 #show footnote.entry: none
+// ... and also the line separating the footnote from the main page
 #set footnote.entry(separator: none)
+
+
 
 #show: doc => book(
 $if(title)$
@@ -98,3 +118,4 @@ $endif$
   toc_depth: $toc-depth$,
   doc,
 )
+
