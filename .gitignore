@@ -8,7 +8,8 @@
 # Build artifacts
 _acuity/
 template_files/
-template.typ
+index.typ
+site_libs/
 
 # Other
 **/.DS_Store

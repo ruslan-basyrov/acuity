@@ -1,11 +1,11 @@
 title: Acuity
 author: Ruslan Basyrov
-version: 0.0.3
+version: 0.0.8
 quarto-required: ">=1.8.0"
 contributes:
   project:
     project:
-      type: default
+      type: website
       output-dir: _acuity
   formats:
     html:
@@ -21,6 +21,8 @@ contributes:
       reference-links: true
       reference-location: margin
       citation-location: margin
+      cite-method: citeproc
+      csl: custom.csl
 
     typst:
       filters:
@@ -28,3 +30,6 @@ contributes:
       template-partials:
         - typst-template.typ
         - typst-show.typ
+      # The CSL file is hardcoded in `typst-template.typ`
+      # until this issue is resolved: https://github.com/quarto-dev/quarto-cli/issues/11552
+      # csl: custom.csl

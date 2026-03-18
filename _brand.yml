@@ -23,14 +23,28 @@ color:
     gray: "#DDDDDD"
     black: "#000000"
     white: "#FFFFFF"
-  primary: blue
-  secondary: rose
-  tertiary: teal
+  primary:
+    light: "#C23631" 
+    dark: "#E55B56"  
+  secondary:
+    light: "#52525B" 
+    dark: "#A1A1AA"  
+  tertiary:
+    light: "#8B8D8E" 
+    dark: "#71717A"  
   success: green
   info: cyan
   warning: sand
   danger: wine
-  light: gray
-  dark: black
-  foreground: black
-  background: white
+  light:
+    light: "#F4F4F5" 
+    dark: "#202023"  
+  dark:
+    light: "#27272A" 
+    dark: "#E4E4E7"  
+  foreground:
+    light: "#111111" 
+    dark: "#EEEEEE"  
+  background:
+    light: "#FBFBF9" 
+    dark: "#121214"
