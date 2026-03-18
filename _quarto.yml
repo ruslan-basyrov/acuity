@@ -4,7 +4,9 @@ website:
     collapsible: true
 
 project:
-    type: acuity
+  type: acuity
+
 format:
-  acuity-html: default
+  acuity-html:
+    respect-user-color-scheme: true
   acuity-typst: default

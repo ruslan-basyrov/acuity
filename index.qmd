@@ -2,11 +2,6 @@
 title: "Acuity"
 subtitle: "Opinionated Quarto template inspired by Edward Tufte's principles"
 author: "Ruslan Basyrov"
-format:
-  acuity-html:
-    default
-  acuity-typst:
-    keep-typ: true
 bibliography: bibliography.bib
 ---
 

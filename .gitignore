@@ -7,9 +7,10 @@
 
 # Build artifacts
 _acuity/
-template_files/
+index_files/
 index.typ
 site_libs/
+renv/library
 
 # Other
 **/.DS_Store
