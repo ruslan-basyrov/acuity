@@ -2,6 +2,10 @@ website:
   sidebar:
     style: "floating"
     collapsible: true
+    search: false
+    tools:
+      - icon: github
+        href: https://github.com/ruslan-basyrov/acuity
 
 project:
   type: acuity
