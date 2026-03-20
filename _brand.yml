@@ -5,8 +5,10 @@ typography:
   fonts:
     - family: Atkinson Hyperlegible Next
       source: google
+    - family: Cormorant Garamond
+      source: google
   base: Atkinson Hyperlegible Next
-  headings: Atkinson Hyperlegible Next
+  headings: Cormorant Garamond
 
 # Paul Tol's color palette for colour-blind people (https://sronpersonalpages.nl/~pault/)
 color:
@@ -24,8 +26,8 @@ color:
     black: "#000000"
     white: "#FFFFFF"
   primary:
-    light: "#C23631" 
-    dark: "#E55B56"  
+    light: "#D42C26"
+    dark: "#E55B56" 
   secondary:
     light: "#52525B" 
     dark: "#A1A1AA"  
