@@ -33,6 +33,7 @@ contributes:
       template-partials:
         - typst-template.typ
         - typst-show.typ
+      syntax-highlighting: idiomatic
       # theme:
       #   - brand
       # The CSL file is hardcoded in `typst-template.typ`
