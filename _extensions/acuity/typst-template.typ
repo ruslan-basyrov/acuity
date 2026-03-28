@@ -1,3 +1,5 @@
+#import "@preview/marginalia:0.3.1": wideblock
+
 #let book(
   title: none,
   subtitle: none,
@@ -24,9 +26,11 @@
   toc_indent: 1.5em,
   doc,
 ) = {
-  set page(
+ set page(
     paper: paper,
-    number-align: top + right,
+    header: context {
+      wideblock(side: "outer", align(right, counter(page).display("1")))
+    },
   )
   set par(justify: true)
   set text(lang: lang,
