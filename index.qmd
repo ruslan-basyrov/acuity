@@ -28,8 +28,16 @@ Test sidenote^[The tested sidenote is here.].
 
 The template uses a single font with high legibility and readability: Atkinson Hyperlegible Next (@AtkinsonHyperlegibleFont2019).
 
+# Side Note
 Sidenote with a citation ^[Citations are expanded to full references in sidenotes, like this: @AtkinsonHyperlegibleFont2019].
 
+Sidenote with an image ^[400x400 pixels square {{< placeholder 400 400 format=svg >}}]
+
+# Side Figure
+
+::: {.notefigure}
+![Caption text](https://placehold.co/400x400/88CCEE/black?text=Side+Note+Test){#fig-side-test}
+:::
 
 # Color Palette
 

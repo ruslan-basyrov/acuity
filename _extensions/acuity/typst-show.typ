@@ -1,4 +1,4 @@
-#import "@preview/marginalia:0.3.1": wideblock
+#import "@preview/marginalia:0.3.1": wideblock, notefigure
 #import "@preview/marginalia:0.3.1" as marginalia
 
 #show: marginalia.setup.with(
