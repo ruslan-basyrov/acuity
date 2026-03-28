@@ -13,4 +13,5 @@ project:
 format:
   acuity-html:
     respect-user-color-scheme: true
+    syntax-highlighting: github
   acuity-typst: default

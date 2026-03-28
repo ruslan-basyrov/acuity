@@ -10,6 +10,18 @@ typography:
   base: Atkinson Hyperlegible Next
   headings: Roboto
 
+  monospace-block:
+    background-color:
+      light: "#F4F4F5"     # same as light.light
+      dark: "#27272A"      # same as dark.light
+  monospace-inline:
+    color:
+      light: "#1C1B1B"    # same as foreground.light
+      dark: "#EEEEEE"     # same as foreground.dark
+    background-color:
+      light: "#F4F4F5"
+      dark: "#27272A"
+
 # Paul Tol's color palette for colour-blind people (https://sronpersonalpages.nl/~pault/)
 color:
   palette:
