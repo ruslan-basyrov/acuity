@@ -5,10 +5,10 @@ typography:
   fonts:
     - family: Atkinson Hyperlegible Next
       source: google
-    - family: Cormorant Garamond
+    - family: Roboto
       source: google
   base: Atkinson Hyperlegible Next
-  headings: Cormorant Garamond
+  headings: Roboto
 
 # Paul Tol's color palette for colour-blind people (https://sronpersonalpages.nl/~pault/)
 color:

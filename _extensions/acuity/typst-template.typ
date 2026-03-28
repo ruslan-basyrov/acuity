@@ -31,6 +31,7 @@
     header: context {
       wideblock(side: "outer", align(right, counter(page).display("1")))
     },
+    number-align: top + right,
   )
   set par(justify: true)
   set text(lang: lang,
