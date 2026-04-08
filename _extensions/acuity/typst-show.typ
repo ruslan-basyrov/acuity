@@ -22,7 +22,7 @@
     show cite: c => {
       let ref-target = c.at("target", default: c.at("key", default: none))
       if c.at("form", default: "normal") != "full" {
-        cite(ref-target, form: "full")
+        linebreak() + cite(ref-target, form: "full")
       } else {
         c
       }
@@ -30,6 +30,15 @@
 
     it.body
   }]
+}
+
+// intercept citation not in full reference and move it to footnote
+#show cite: it => {
+  if it.form != "full" {
+    footnote(cite(it.key, form: "full", supplement: it.supplement))
+  } else {
+    it
+  }
 }
 
 // remove the note as a footnote ...
