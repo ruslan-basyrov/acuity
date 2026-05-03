@@ -71,12 +71,14 @@
     grid(
       columns: (1fr,) * ncols,
       row-gutter: 1.5em,
+      column-gutter: 2em,
       ..authors.map(author =>
           align(left)[
-            #set text(size: 1.25em)
+            #set text(size: 1.1em)
+            #set par(leading: 0.4em)
             #author.name \
-            #author.affiliation \
-            #author.email
+            #text(size: 0.85em)[#author.affiliation] \
+            #text(size: 0.85em)[#author.email]
           ]
       )
     )
