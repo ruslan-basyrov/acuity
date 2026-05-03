@@ -29,7 +29,9 @@
  set page(
     paper: paper,
     header: context {
-      wideblock(side: "outer", align(right, counter(page).display("1")))
+      if counter(page).get().first() > 1 {
+        wideblock(side: "outer", align(right, counter(page).display("1")))
+      }
     },
     number-align: top + right,
   )
