@@ -1,0 +1,23 @@
+/*-- scss:rules --*/
+
+// Plot tooltip — light mode (default, usually fine, but explicit for safety)
+[aria-label="tip"] path {
+  fill: var(--bs-body-bg);
+  stroke: var(--bs-border-color);
+}
+[aria-label="tip"] text,
+[aria-label="tip"] tspan {
+  fill: var(--bs-body-color);
+}
+
+// Dark mode override
+[data-bs-theme="dark"] {
+  [aria-label="tip"] path {
+    fill: var(--bs-body-bg);
+    stroke: var(--bs-border-color);
+  }
+  [aria-label="tip"] text,
+  [aria-label="tip"] tspan {
+    fill: var(--bs-body-color);
+  }
+}

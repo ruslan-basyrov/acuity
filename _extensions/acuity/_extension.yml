@@ -12,8 +12,10 @@ contributes:
       output-dir: _acuity
   formats:
     html:
-      filters:               
+      filters:
         - wideblock.lua
+      theme:
+        - custom.scss
       grid:
         sidebar-width: 250px
         body-width: 725px
