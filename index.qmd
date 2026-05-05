@@ -26,7 +26,7 @@ Test sidenote^[The tested sidenote is here.].
 
 # Font
 
-The template uses a single font with high legibility and readability: Atkinson Hyperlegible Next (@AtkinsonHyperlegibleFont2019).
+The template uses a single font with high legibility and readability: Atkinson Hyperlegible Next [@AtkinsonHyperlegibleFont2019].
 
 # Side Note
 Sidenote with a citation ^[Citations are expanded to full references in sidenotes, like this: @AtkinsonHyperlegibleFont2019].
@@ -43,44 +43,15 @@ Sidenote with an image ^[400x400 pixels square {{< placeholder 400 400 format=sv
 
 [Paul Tol's color palette](https://sronpersonalpages.nl/~pault/), designed to be visible by color-blind people, is used to provide sensible defaults with high contrast:
 
-```{r}
-#| echo: false
-#| message: false
-#| fig-align: "center"
 
-# Implicitly read the palette from _brand.yml
-brand <- yaml::read_yaml("_brand.yml")
-pal <- unlist(brand$color$palette)
+{{< include build/figures/palette.qmd >}}
 
-# Prepare the data for a grid layout
-n_cols <- 4
-df <- data.frame(
-  name = names(pal),
-  hex = pal,
-  # Calculate grid positions
-  x = (seq_along(pal) - 1) %% n_cols,
-  y = -((seq_along(pal) - 1) %/% n_cols) 
-)
-
-# A compact grid visualization
-library(ggplot2)
-ggplot(df, aes(x = x, y = y, fill = hex)) +
-  geom_tile(color = "white", linewidth = 1) +
-  geom_text(
-    aes(label = sprintf("%s \n %s", name, hex)),
-    # Dynamically calculate brightness to make text black or white
-    color = ifelse(colSums(col2rgb(df$hex)) > 500, "black", "white"),
-    fontface = "bold",
-    size = 3.5
-  ) +
-  scale_fill_identity() +
-  theme_void() +
-  theme(plot.margin = margin(5, 5, 5, 5))
-```
 
 # Semantic Color Testing
 
 This section tests how Quarto maps semantic colors from `_brand.yaml` to standard document elements like callouts.
+
+
 
 ::: {.callout-note}
 **Info Color:** cyan / `#88CCEE`.
@@ -97,5 +68,4 @@ This section tests how Quarto maps semantic colors from `_brand.yaml` to standar
 ::: {.callout-important}
 **Danger Color:** wine / `#882255`.
 :::
-
 
