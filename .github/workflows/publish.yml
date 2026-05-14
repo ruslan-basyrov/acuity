@@ -34,6 +34,11 @@ jobs:
         with:
           r-version: 'release'
 
+      - name: Set up renv
+        uses: r-lib/actions/setup-renv@v2
+        env:
+          RENV_CONFIG_REPOS_OVERRIDE: "https://packagemanager.posit.co/cran/__linux__/jammy/latest"
+
       # Renders both HTML and Typst (PDF) into the _acuity folder
       - name: Render Quarto Project
         run: quarto render
