@@ -1,0 +1,31 @@
+{% if format == "html" %}
+
+yaml = import("https://cdn.jsdelivr.net/npm/js-yaml@4/+esm")
+brandData = yaml.load(await FileAttachment("_brand.yml").text())
+palette = Object.entries(brandData.color.palette)
+  .map(([name, hex], i) => ({ name, hex, x: i % 4, y: -Math.floor(i / 4) }))
+
+{% elif format == "pdf" %}
+
+const brandData = yaml.load(readFileSync("_brand.yml", "utf8"));
+const palette = Object.entries(brandData.color.palette)
+  .map(([name, hex], i) => ({ name, hex, x: i % 4, y: -Math.floor(i / 4) }));
+
+{% endif %}
+
+
+{% if format == "pdf" %}const figure = {% endif %}Plot.plot({
+  axis: null,
+  margin: 5,
+  aspectRatio: 1,
+  {% if format == "pdf" %}document: dom.window.document,{% endif %}
+  marks: [
+    Plot.cell(palette, { x: "x", y: "y", fill: "hex", stroke: "white", strokeWidth: 2 }),
+    Plot.text(palette, {
+      x: "x", y: "y",
+      text: d => `${d.name}\n${d.hex}`,
+      fill: d => d3.lab(d.hex).l > 60 ? "black" : "white",
+      fontWeight: "bold"
+    })
+  ]
+})
