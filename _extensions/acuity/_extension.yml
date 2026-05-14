@@ -22,8 +22,6 @@ contributes:
     html:
       filters:
         - wideblock.lua
-      theme:
-        - custom.scss
       grid:
         sidebar-width: 0px
         body-width: 700px
