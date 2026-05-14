@@ -3,72 +3,64 @@ title: "Acuity"
 subtitle: "Opinionated Quarto template inspired by Edward Tufte's principles"
 author: "Ruslan Basyrov"
 bibliography: bibliography.bib
+abstract: |
+  Acuity is a Quarto extension built on Tufte's principles: generous margins for sidenotes, an accessible color palette, and typography that gets out of the way. This document demonstrates each feature in context.
 ---
 
-# Abstract
+# Typography
 
-{{< lipsum 1 >}}
+Acuity sets body text in Atkinson Hyperlegible Next^[@AtkinsonHyperlegibleFont2019], a typeface designed by the Braille Institute for maximum legibility. Headings use EB Garamond for typographic contrast, and code is set in JetBrains Mono. All three load from Google Fonts.
 
-Test sidenote^[The tested sidenote is here.].
+# Layout & Margins
 
-# Wideblock Test
+The page is a two-column grid: a body column for prose and a margin column for annotation. Figures, citations, and footnotes flow into the margin rather than interrupting the text — the margin speaks when the body cannot pause.
 
-## Text
+
+Wideblock elements span both columns when a figure or table is too wide for the body alone:
+
 ::: {.wideblock}
-{{< lipsum 1 >}}
+![A wide image spanning body and margin columns.](https://placehold.co/1100x300/88CCEE/black?text=Wide+Image){#fig-wide-test}
 :::
 
-## Image
-::: {.wideblock}
-![This is a wide image spanning into the right margin](https://placehold.co/1100x400/88CCEE/black?text=Wide+Image+Test){#fig-wide-test}
-:::
+# Code
 
+Code blocks carry a left border instead of a background fill. The border marks the block as code without enclosing it in a box that fights the page color. Inline `code` uses a faint tint of the accent color.
 
-# Font
-
-The template uses a single font with high legibility and readability: Atkinson Hyperlegible Next (@AtkinsonHyperlegibleFont2019).
-
-# Side Note
-Sidenote with a citation ^[Citations are expanded to full references in sidenotes, like this: @AtkinsonHyperlegibleFont2019].
-
-Sidenote with an image ^[400x400 pixels square {{< placeholder 400 400 format=svg >}}]
-
-# Side Figure
-
-::: {.notefigure}
-![Caption text](https://placehold.co/400x400/88CCEE/black?text=Side+Note+Test){#fig-side-test}
-:::
+```{r}
+#| label: fig-sin
+#| column: margin
+#| fig-cap: "Margin figures can include plots. This one anchors to the code section."
+plot(sin, -pi, 2*pi)
+```
 
 # Color Palette
 
-[Paul Tol's color palette](https://sronpersonalpages.nl/~pault/), designed to be visible by color-blind people, is used to provide sensible defaults with high contrast:
+[Paul Tol's color palette](https://sronpersonalpages.nl/~pault/), designed to remain distinguishable under color-blindness, provides the named swatches. Semantic roles — primary, success, warning, danger — are mapped separately in `_brand.yml` and drive callout colors and link accents.
 
 ```{r}
+#| label: fig-palette
 #| echo: false
 #| message: false
 #| fig-align: "center"
+#| fig-cap: "Paul Tol's color palette — ten named swatches optimized for color-blind readability."
 
-# Implicitly read the palette from _brand.yml
-brand <- yaml::read_yaml("_brand.yml")
+brand <- yaml::read_yaml("_extensions/acuity/_brand.yml")
 pal <- unlist(brand$color$palette)
+pal <- pal[!names(pal) %in% c("border")]
 
-# Prepare the data for a grid layout
 n_cols <- 4
 df <- data.frame(
   name = names(pal),
   hex = pal,
-  # Calculate grid positions
   x = (seq_along(pal) - 1) %% n_cols,
-  y = -((seq_along(pal) - 1) %/% n_cols) 
+  y = -((seq_along(pal) - 1) %/% n_cols)
 )
 
-# A compact grid visualization
 library(ggplot2)
 ggplot(df, aes(x = x, y = y, fill = hex)) +
   geom_tile(color = "white", linewidth = 1) +
   geom_text(
-    aes(label = sprintf("%s \n %s", name, hex)),
-    # Dynamically calculate brightness to make text black or white
+    aes(label = sprintf("%s\n%s", name, hex)),
     color = ifelse(colSums(col2rgb(df$hex)) > 500, "black", "white"),
     fontface = "bold",
     size = 3.5
@@ -78,24 +70,20 @@ ggplot(df, aes(x = x, y = y, fill = hex)) +
   theme(plot.margin = margin(5, 5, 5, 5))
 ```
 
-# Semantic Color Testing
-
-This section tests how Quarto maps semantic colors from `_brand.yaml` to standard document elements like callouts.
+Callouts inherit semantic colors from the palette:
 
 ::: {.callout-note}
-**Info Color:** cyan / `#88CCEE`.
+**Info** — cyan `#88CCEE`
 :::
 
 ::: {.callout-tip}
-**Success Color:** green / `{{< brand color green >}}`.
+**Success** — green `{{< brand color green >}}`
 :::
 
 ::: {.callout-warning}
-**Warning Color:** sand / `#DDCC77`.
+**Warning** — sand `#DDCC77`
 :::
 
 ::: {.callout-important}
-**Danger Color:** wine / `#882255`.
+**Danger** — wine `#882255`
 :::
-
-

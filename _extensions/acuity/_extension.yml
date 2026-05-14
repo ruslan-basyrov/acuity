@@ -8,34 +8,51 @@ contributes:
   # brand: _brand.yml
   project:
     project:
-      type: website
+      type:  website
       output-dir: _acuity
+      brand: _brand.yml
+    website:
+      navbar:
+        background: light
+        search: true
+        style: floating
+        collapsible: true
+
   formats:
     html:
       filters:               
         - wideblock.lua
       grid:
-        sidebar-width: 250px
-        body-width: 725px
-        margin-width: 325px
+        sidebar-width: 0px
+        body-width: 700px
+        margin-width: 400px
+        # gutter-width: 1.5rem
+      # code-block-border-left: true
       toc: true
       toc-title: "Contents"
-      toc-location: left
+      toc-location: body
+      page-layout: article
       reference-links: true
       reference-location: margin
       citation-location: margin
       cite-method: citeproc
       csl: custom.csl
+      syntax-highlighting: github
+      respect-user-color-scheme: true
+      theme:
+        light: [brand, custom.scss]
+        dark: [brand, custom.scss]
 
     typst:
       filters:
         - wideblock.lua
+        # - sideblock.lua
       template-partials:
         - typst-template.typ
         - typst-show.typ
       syntax-highlighting: idiomatic
-      # theme:
-      #   - brand
+      theme:
+        - brand
       # The CSL file is hardcoded in `typst-template.typ`
       # until this issue is resolved: https://github.com/quarto-dev/quarto-cli/issues/11552
       # csl: custom.csl

@@ -1,17 +1,17 @@
 website:
-  sidebar:
-    style: "floating"
-    collapsible: true
-    search: false
+  navbar:
     tools:
       - icon: github
         href: https://github.com/ruslan-basyrov/acuity
+    left:
+      - text: "Home"
+        href: https://ruslanbasyrov.com
 
 project:
   type: acuity
 
 format:
-  acuity-html:
-    respect-user-color-scheme: true
-    syntax-highlighting: github
-  acuity-typst: default
+  acuity-html: default
+    
+  acuity-typst:
+    keep-typ: true
