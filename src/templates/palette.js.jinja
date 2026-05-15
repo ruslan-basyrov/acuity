@@ -1,7 +1,7 @@
 {% if format == "html" %}
 
 yaml = import("https://cdn.jsdelivr.net/npm/js-yaml@4/+esm")
-brandData = yaml.load(await FileAttachment("../../_extensions/acuity/_brand.yml").text())
+brandData = yaml.load(await FileAttachment("_extensions/acuity/_brand.yml").text())
 paletteNames = new Set(["rose","blue","sand","green","cyan","wine","teal","olive","purple","gray","black","white"])
 palette = Object.entries(brandData.color.palette)
   .filter(([name]) => paletteNames.has(name))

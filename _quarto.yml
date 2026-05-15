@@ -9,6 +9,8 @@ website:
 
 project:
   type: acuity
+  render:
+    - "index.qmd"
 
 format:
   acuity-html: default
