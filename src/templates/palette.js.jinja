@@ -1,16 +1,19 @@
 {% if format == "html" %}
 
 yaml = import("https://cdn.jsdelivr.net/npm/js-yaml@4/+esm")
-brandData = yaml.load(await FileAttachment("_brand.yml").text())
+brandData = yaml.load(await FileAttachment("../../_extensions/acuity/_brand.yml").text())
+paletteNames = new Set(["rose","blue","sand","green","cyan","wine","teal","olive","purple","gray","black","white"])
 palette = Object.entries(brandData.color.palette)
+  .filter(([name]) => paletteNames.has(name))
   .map(([name, hex], i) => ({ name, hex, x: i % 4, y: -Math.floor(i / 4) }))
 
 {% elif format == "pdf" %}
 
-const brandData = yaml.load(readFileSync("_brand.yml", "utf8"));
+const brandData = yaml.load(readFileSync("_extensions/acuity/_brand.yml", "utf8"));
+const paletteNames = new Set(["rose","blue","sand","green","cyan","wine","teal","olive","purple","gray","black","white"]);
 const palette = Object.entries(brandData.color.palette)
+  .filter(([name]) => paletteNames.has(name))
   .map(([name, hex], i) => ({ name, hex, x: i % 4, y: -Math.floor(i / 4) }));
-
 {% endif %}
 
 

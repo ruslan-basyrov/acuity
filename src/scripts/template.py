@@ -10,15 +10,13 @@ if __name__ == "__main__":
     parser.add_argument("output", help="Directory to store built JS files and SVG")
     parser.add_argument("fig", help="Base file name of the plot")
     parser.add_argument("fig_dir", help="Directory to store rendered SVG of figure")
-    # parser.add_argument("--data", help="Data in CSV format")
-    # parser.add_argument("--x", help="X-axis to plot")
-    # parser.add_argument("--y", help="Y-axis to plot")
 
     args = parser.parse_args()
 
-    template_path = Path(args.input, args.fig + ".js.jinja")
     fig_path = Path(args.fig_dir, f"{args.fig}.svg")
     fig_path.parent.mkdir(parents=True, exist_ok=True)
+
+    Path(args.output).mkdir(parents=True, exist_ok=True)
 
     env = Environment(loader=FileSystemLoader([args.output, args.input]))
 
@@ -37,4 +35,3 @@ if __name__ == "__main__":
     chunk_template = env.get_template("chunk.qmd.jinja")
     chunk_result = chunk_template.render(fig=args.fig)
     Path(args.output, f"{args.fig}.qmd").write_text(chunk_result, encoding="utf-8")
-
