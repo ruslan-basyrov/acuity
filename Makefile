@@ -7,7 +7,7 @@ FIGURES   = palette
 BUILD     = build/figures
 SVG_DIR   = $(BUILD)/svgs
 
-QUARTO    = uv run quarto
+QUARTO    = quarto
 PYTHON    = uv run python
 
 .PHONY: all compile svgs install-deno clean preview
