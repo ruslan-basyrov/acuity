@@ -1,0 +1,47 @@
+{% if format == "html" %}
+
+ol = {
+  const ol = await require("ol@7.1.0/dist/ol.js").catch(() => window.ol);
+  if (!ol._style) ol._style = document.head.appendChild(html`<link rel=stylesheet href="${await require.resolve("ol@7.1.0/ol.css")}">`);
+  return ol;
+}
+
+viewof map = {
+  const target = html`<div style="height: 500px;">`;
+  yield target;
+  const map = target.value = new ol.Map({
+    layers: [
+      new ol.layer.Tile({
+        source: new ol.source.XYZ({
+          url: "https://tile.opentopomap.org/{z}/{x}/{y}.png",
+          attributions: "© OpenTopoMap contributors"
+        })
+      })
+    ],
+    target,
+    view: new ol.View({
+      center: ol.proj.fromLonLat([13.3, 47.5]),
+      zoom: 7
+    })
+  });
+  invalidation.then(() => map.dispose());
+  return target;
+}
+
+{% elif format == "pdf" %}
+
+const worldRes = await fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-10m.json");
+const world = await worldRes.json();
+const austria = topojson.feature(world, world.objects.countries).features.find(d => d.id === "040");
+
+const figure = Plot.plot({
+  projection: { type: "equal-earth", domain: austria },
+  width: 700,
+  document: dom.window.document,
+  marks: [
+    Plot.geo(austria, { fill: "#d4e6c3", stroke: "#555" }),
+    Plot.graticule({ stroke: "#ccc", strokeWidth: 0.5 })
+  ]
+})
+
+{% endif %}

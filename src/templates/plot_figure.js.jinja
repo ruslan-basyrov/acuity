@@ -3,6 +3,7 @@
 import * as Plot from "npm:@observablehq/plot";
 import * as d3 from "npm:d3";
 import yaml from "npm:js-yaml";
+import * as topojson from "npm:topojson-client";
 import { JSDOM } from "npm:jsdom";
 import { readFileSync, writeFileSync } from "node:fs";
 
@@ -11,7 +12,7 @@ const dom = new JSDOM("");
 {% endif %}
 
 
-{% include "palette.js.jinja" %}
+{% include fig ~ ".js.jinja" %}
 
 
 {% if format == "pdf" %}

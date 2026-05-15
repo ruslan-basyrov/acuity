@@ -2,7 +2,7 @@ SRC_DIR   = src
 TEMPLATES = $(SRC_DIR)/templates
 SCRIPTS   = $(SRC_DIR)/scripts
 
-FIGURES   = palette
+FIGURES   = palette austria_map
 
 BUILD     = build/figures
 SVG_DIR   = $(BUILD)/svgs
@@ -24,10 +24,13 @@ $(BUILD)/%.qmd: $(TEMPLATES)/%.js.jinja $(TEMPLATES)/plot_figure.js.jinja $(TEMP
 
 svgs: plots
 	$(foreach fig,$(FIGURES), \
-	  deno run --allow-read --allow-write $(BUILD)/svg_$(fig).js;)
+	  deno run --allow-read --allow-write --allow-net $(BUILD)/svg_$(fig).js;)
 
 preview: svgs
 	$(QUARTO) preview
+
+render: svgs
+	$(QUARTO) render
 
 clean:
 	rm -rf build _acuity .quarto site_libs

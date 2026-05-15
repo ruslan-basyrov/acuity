@@ -33,6 +33,16 @@ Code blocks carry a left border instead of a background fill. The border marks t
 plot(sin, -pi, 2*pi)
 ```
 
+# Interactive Figures
+
+Acuity renders Observable JavaScript figures to both HTML and PDF. In HTML, figures are fully interactive — panning, zooming, and client-side reactivity with no running server. In PDF, the same figure source produces a static SVG via Deno. This is a meaningful advantage over Plotly, which requires a live Python or R server for interactivity and falls back to a static screenshot for PDF export.
+
+The map below is an Observable figure: interactive in HTML, a vector SVG in PDF.
+
+::: {.wideblock}
+{{< include build/figures/austria_map.qmd >}}
+:::
+
 # Color Palette
 
 [Paul Tol's color palette](https://sronpersonalpages.nl/~pault/), designed to remain distinguishable under color-blindness, provides the named swatches. Semantic roles — primary, success, warning, danger — are mapped separately in `_brand.yml` and drive callout colors and link accents.
