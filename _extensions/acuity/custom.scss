@@ -11,6 +11,10 @@ $table-hover-bg:        transparent;
 
 /*-- scss:rules --*/
 
+// ── Custom variables ─────────────────────────────────────────────────
+
+$secondary-color: mix($body-color, $light, 30%);
+
 // ── Base ─────────────────────────────────────────────────────────────
 body {
   font-feature-settings: "onum", "kern", "liga";
@@ -20,6 +24,11 @@ body {
 a {
   border-bottom: 1px solid transparent;
   transition: border-color .15s;
+}
+
+// ── Navbar ───────────────────────────────────────────────────────────
+.navbar {
+  border-block-end: 1px solid $secondary-color;
 }
 
 // ── Headings ─────────────────────────────────────────────────────────
@@ -94,7 +103,7 @@ p { hyphens: auto; }
 div.sourceCode {
   background: transparent !important;
   border: none !important;
-  border-left: 2px solid $brand-border !important;
+  border-left: 1px solid $secondary-color !important;
   border-radius: 0 !important;
   padding: 2px 0 2px 8px !important;
 //   margin: 18px 0 !important;
