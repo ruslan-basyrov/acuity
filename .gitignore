@@ -12,7 +12,6 @@ index.typ
 site_libs/
 renv/library
 build/
-figures/
 
 # Other
 **/.DS_Store

@@ -1,36 +1,26 @@
-SRC_DIR   = src
-TEMPLATES = $(SRC_DIR)/templates
-SCRIPTS   = $(SRC_DIR)/scripts
+PRERENDER = _extensions/acuity-figures/prerender.ts
 
-FIGURES   = palette austria_map
+QUARTO ?= uv run --no-project --with quarto-cli quarto
+DENO    = uv run deno
 
-BUILD     = build/figures
-SVG_DIR   = $(BUILD)/svgs
+.PHONY: all figures render preview clean fclean
 
-QUARTO    = quarto
-PYTHON    = uv run python
+all: render
 
-.PHONY: all compile svgs install-deno clean preview
+# Normally the extension runs this as a pre-render script. It is bootstrapped
+# here because Quarto resolves `{{< include >}}` while scanning input files,
+# before pre-render runs, so a clean checkout has nothing to include yet.
+figures:
+	$(DENO) run -A $(PRERENDER)
 
-all: compile
-
-compile: svgs
-	$(QUARTO) render index.qmd
-
-plots: $(FIGURES:%=$(BUILD)/%.qmd)
-
-$(BUILD)/%.qmd: $(TEMPLATES)/%.js.jinja $(TEMPLATES)/plot_figure.js.jinja $(TEMPLATES)/chunk.qmd.jinja
-	$(PYTHON) $(SCRIPTS)/template.py $(TEMPLATES) $(BUILD) $* $(SVG_DIR)
-
-svgs: plots
-	$(foreach fig,$(FIGURES), \
-	  deno run --allow-read --allow-write --allow-net $(BUILD)/svg_$(fig).js;)
-
-preview: svgs
-	$(QUARTO) preview
-
-render: svgs
+render: figures
 	$(QUARTO) render
 
+preview: figures
+	$(QUARTO) preview
+
 clean:
-	rm -rf build _acuity .quarto site_libs
+	rm -rf build .quarto index_files index.typ
+
+fclean: clean
+	rm -rf _acuity

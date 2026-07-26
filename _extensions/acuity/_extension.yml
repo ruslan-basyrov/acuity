@@ -11,6 +11,8 @@ contributes:
       type:  website
       output-dir: _acuity
       brand: _brand.yml
+      pre-render:
+        - ../acuity-figures/prerender.ts
     website:
       navbar:
         background: light

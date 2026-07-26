@@ -1,10 +1,12 @@
 ---
 title: "Acuity"
-subtitle: "Opinionated Quarto template inspired by Edward Tufte's principles"
+subtitle: "Opinionated Quarto template"
 author: "Ruslan Basyrov"
 bibliography: bibliography.bib
 abstract: |
-  Acuity is a Quarto extension built on Tufte's principles: generous margins for sidenotes, an accessible color palette, and typography that gets out of the way. This document demonstrates each feature in context.
+  Acuity is a Quarto extension with attention to the best data visualization practices.
+  This document demonstrates each feature in context.
+
 ---
 
 # Typography
@@ -13,7 +15,7 @@ Acuity sets body text in Atkinson Hyperlegible Next^[@AtkinsonHyperlegibleFont20
 
 # Layout & Margins
 
-The page is a two-column grid: a body column for prose and a margin column for annotation. Figures, citations, and footnotes flow into the margin rather than interrupting the text — the margin speaks when the body cannot pause.
+The page is a two-column grid: a body column for prose and a margin column for annotation. Figures, citations, and footnotes flow into the margin rather than interrupting the text.
 
 
 Wideblock elements span both columns when a figure or table is too wide for the body alone:
@@ -33,14 +35,16 @@ Code blocks carry a left border instead of a background fill. The border marks t
 plot(sin, -pi, 2*pi)
 ```
 
-# Interactive Figures
+# Render Observable Plot once
 
-Acuity renders Observable JavaScript figures to both HTML and PDF. In HTML, figures are fully interactive — panning, zooming, and client-side reactivity with no running server. In PDF, the same figure source produces a static SVG via Deno. This is a meaningful advantage over Plotly, which requires a live Python or R server for interactivity and falls back to a static screenshot for PDF export.
-
-The map below is an Observable figure: interactive in HTML, a vector SVG in PDF.
+The map below is an Observable figure: the same code is pre-rendered to work in both HTML and PDF.
 
 ::: {.wideblock}
-{{< include build/figures/austria_map.qmd >}}
+::: {#fig-austria}
+{{< include build/figures/austria-map.qmd >}}
+
+Relief and six biggest cities of Austria.
+:::
 :::
 
 # Color Palette
@@ -52,7 +56,7 @@ The map below is an Observable figure: interactive in HTML, a vector SVG in PDF.
 Callouts inherit semantic colors from the palette:
 
 ::: {.callout-note}
-**Info** — cyan `#88CCEE`
+**Info** — cyan `{{< brand color cyan >}}`
 :::
 
 ::: {.callout-tip}
@@ -60,9 +64,9 @@ Callouts inherit semantic colors from the palette:
 :::
 
 ::: {.callout-warning}
-**Warning** — sand `#DDCC77`
+**Warning** — sand `{{< brand color sand >}}`
 :::
 
 ::: {.callout-important}
-**Danger** — wine `#882255`
+**Danger** — wine `{{< brand color wine >}}`
 :::

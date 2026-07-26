@@ -1,0 +1,14 @@
+title: Acuity Figures
+author: Ruslan Basyrov
+version: 0.1.0
+quarto-required: ">=1.8.0"
+
+# Extension prerenders a single code of Observable Plot to both PDF (Typst) and
+# HTML formats.
+
+contributes:
+  project:
+    project:
+      type: default
+      pre-render:
+        - prerender.ts
