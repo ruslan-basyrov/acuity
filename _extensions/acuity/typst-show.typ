@@ -1,6 +1,15 @@
 #import "@preview/marginalia:0.3.1": note, notefigure, wideblock
 #import "@preview/marginalia:0.3.1" as marginalia
 
+// Quarto colours a note callout with the brand's `primary`; every other callout
+// uses its semantic role. Send notes to `info` so both formats agree.
+#let quarto-callout = callout
+#let callout(background_color: none, icon_color: none, ..args) = quarto-callout(
+  background_color: if icon_color == brand-color.primary { brand-color-background.info } else { background_color },
+  icon_color: if icon_color == brand-color.primary { brand-color.info } else { icon_color },
+  ..args,
+)
+
 #show: marginalia.setup.with(
   inner: (far: 25mm, width: 0pt, sep: 0pt),     // Left margin
   outer: (far: 25mm, width: 54mm, sep: 10mm),   // Right margin

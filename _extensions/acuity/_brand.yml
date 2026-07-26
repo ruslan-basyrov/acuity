@@ -59,3 +59,13 @@ color:
   background:
     light: white
     dark: black
+
+# Quarto derives callout colors from Bootstrap's $blue/$green/$yellow/$red,
+# not from the semantic roles above. Point them back at the brand.
+defaults:
+  bootstrap:
+    defaults:
+      callout-color-note: "$info"
+      callout-color-tip: "$success"
+      callout-color-warning: "$warning"
+      callout-color-important: "$danger"
