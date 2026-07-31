@@ -10,7 +10,7 @@
 import * as Plot from "npm:@observablehq/plot";
 import * as d3 from "npm:d3";
 import * as yaml from "npm:js-yaml@4";
-import { JSDOM } from "npm:jsdom";
+import { JSDOM } from "npm:jsdom@29";
 import { json, relief } from "./runtime/_geo.js";
 
 const projectDir = Deno.env.get("QUARTO_PROJECT_DIR") ?? Deno.cwd();
