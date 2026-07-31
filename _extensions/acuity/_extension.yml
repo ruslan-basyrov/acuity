@@ -24,6 +24,7 @@ contributes:
     html:
       filters:
         - wideblock.lua
+        - sideblock.lua
       grid:
         sidebar-width: 0px
         body-width: 700px
@@ -48,7 +49,7 @@ contributes:
     typst:
       filters:
         - wideblock.lua
-        # - sideblock.lua
+        - sideblock.lua
       template-partials:
         - typst-template.typ
         - typst-show.typ

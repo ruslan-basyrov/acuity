@@ -6,54 +6,36 @@ bibliography: bibliography.bib
 abstract: |
   Acuity is a Quarto extension with attention to the best data visualization practices.
   This document demonstrates each feature in context.
-
 ---
 
 # Typography
 
 Acuity sets body text in Atkinson Hyperlegible Next^[@AtkinsonHyperlegibleFont2019], a typeface designed by the Braille Institute for maximum legibility. Headings use EB Garamond for typographic contrast, and code is set in JetBrains Mono. All three load from Google Fonts.
 
-# Layout & Margins
+# Two features in one example: wide Observable Plot 
 
-The page is a two-column grid: a body column for prose and a margin column for annotation. Figures, citations, and footnotes flow into the margin rather than interrupting the text.
+The map below is an Observable figure: the same code is pre-rendered to work in both HTML and PDF. It covers the whole width of the page. 
 
-
-Wideblock elements span both columns when a figure or table is too wide for the body alone:
-
-::: {.wideblock}
-![A wide image spanning body and margin columns.](https://placehold.co/1100x300/88CCEE/black?text=Wide+Image){#fig-wide-test}
-:::
-
-# Code
-
-Code blocks carry a left border instead of a background fill. The border marks the block as code without enclosing it in a box that fights the page color. Inline `code` uses a faint tint of the accent color.
-
-```{r}
-#| label: fig-sin
-#| column: margin
-#| fig-cap: "Margin figures can include plots. This one anchors to the code section."
-plot(sin, -pi, 2*pi)
-```
-
-# Render Observable Plot once
-
-The map below is an Observable figure: the same code is pre-rendered to work in both HTML and PDF.
-
-::: {.wideblock}
-::: {#fig-austria}
+::: {.wideblock #fig-austria}
 {{< include build/figures/austria-map.qmd >}}
 
 Relief and six biggest cities of Austria.
 :::
-:::
+
 
 # Color Palette
 
-[Paul Tol's color palette](https://sronpersonalpages.nl/~pault/), designed to remain distinguishable under color-blindness, provides the named swatches. Semantic roles — primary, success, warning, danger — are mapped separately in `_brand.yml` and drive callout colors and link accents.
+[Paul Tol's color palette](https://sronpersonalpages.nl/~pault/), designed to remain distinguishable under color-blindness, provides the named swatches.
 
+::: {.sideblock}
+::: {#fig-palette}
 {{< include build/figures/palette.qmd >}}
 
-Callouts inherit semantic colors from the palette:
+Palette
+:::
+:::
+
+Semantic roles — primary, success, warning, danger — are mapped separately in `_brand.yml` and drive callout colors and link accents:
 
 ::: {.callout-note}
 **Info** — cyan `{{< brand color cyan >}}`

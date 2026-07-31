@@ -211,3 +211,10 @@ section.footnotes {
   border-radius: 0;
 }
 
+
+// ── Wide blocks ──────────────────────────────────────────────────────
+// Widen .wideblock directly
+.wideblock {
+  width: calc(#{$grid-body-width} + #{$grid-margin-width} + 1.5rem);
+  max-width: none;
+}

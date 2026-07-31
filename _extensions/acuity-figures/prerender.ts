@@ -16,7 +16,7 @@ import { json, relief } from "./runtime/_geo.js";
 const projectDir = Deno.env.get("QUARTO_PROJECT_DIR") ?? Deno.cwd();
 const figuresDir = `${projectDir}/figures`;
 const outDir = `${projectDir}/build/figures`;
-const svgRef = (name: string) => `![](build/figures/svgs/${name}.svg)\n`;
+const svgRef = (name: string) => `![](build/figures/svgs/${name}.svg){width=100%}\n`;
 
 // Inline every file a figure loadText()s: a browser can't fetch _brand.yml,
 // because Quarto doesn't publish _extensions/
