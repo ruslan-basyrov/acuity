@@ -3,7 +3,9 @@ function Div(el)
     
     -- TYPST: Wrap in marginalia's #note[] command
     if quarto.doc.is_format("typst") then
-      local blocks = pandoc.List({ pandoc.RawBlock('typst', '#note[\n') })
+      -- No marker/anchor: sideblocks are plain margin content, and the default
+      -- marker style wants the Inter font (not installed -> compile warning)
+      local blocks = pandoc.List({ pandoc.RawBlock('typst', '#note(numbering: (..n) => none, anchor-numbering: (..n) => none)[\n') })
       blocks:extend(el.content)
       blocks:insert(pandoc.RawBlock('typst', '\n]\n'))
       return blocks

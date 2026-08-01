@@ -23,7 +23,8 @@ contributes:
   formats:
     html:
       filters:
-        - wideblock.lua
+        - at: pre-ast
+          path: wideblock.lua
         - sideblock.lua
       grid:
         sidebar-width: 0px
@@ -48,7 +49,8 @@ contributes:
 
     typst:
       filters:
-        - wideblock.lua
+        - at: pre-ast
+          path: wideblock.lua
         - sideblock.lua
       template-partials:
         - typst-template.typ
