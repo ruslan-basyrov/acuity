@@ -1,7 +1,7 @@
 PRERENDER = _extensions/acuity-figures/prerender.ts
 
 QUARTO ?= uv run --no-project --with quarto-cli quarto
-DENO    = uv run deno
+DENO    = uv run --no-project --with "deno>=2.7.14" deno
 
 .PHONY: all figures render preview clean fclean
 

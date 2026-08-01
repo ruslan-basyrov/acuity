@@ -10,7 +10,6 @@ _acuity/
 index_files/
 index.typ
 site_libs/
-renv/library
 build/
 
 # Other
