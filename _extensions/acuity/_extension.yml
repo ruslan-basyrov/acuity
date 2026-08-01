@@ -51,6 +51,7 @@ contributes:
       filters:
         - at: pre-ast
           path: wideblock.lua
+        - citations.lua
         - sideblock.lua
       template-partials:
         - typst-template.typ

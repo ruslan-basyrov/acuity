@@ -16,6 +16,8 @@
   top: 25mm,
   bottom: 25mm,
   book: false,
+  // default 12pt; tighter so citation-dense pages fit their notes
+  clearance: 6pt,
 )
 
 // intercept footnote function with a sidenote function 
@@ -23,7 +25,11 @@
 #show footnote: it => {
   marginalia.note(
     anchor-numbering: (..n) => super(numbering("1", ..n)),
-    numbering: (..n) => super(numbering("1", ..n)) + h(0.25em)
+    numbering: (..n) => super(numbering("1", ..n)) + h(0.25em),
+    // compact: the margin column cannot flow to the next page, so
+    // citation-dense pages need every point of vertical room
+    text-style: (size: 8pt, style: "normal", weight: "regular"),
+    par-style: (spacing: 0.9em, leading: 0.45em, hanging-indent: 0pt),
   )[#{
     show place: none 
     
@@ -41,14 +47,8 @@
   }]
 }
 
-// intercept citation not in full reference and move it to footnote
-#show cite: it => {
-  if it.form != "full" {
-    footnote(cite(it.key, form: "full", supplement: it.supplement))
-  } else {
-    it
-  }
-}
+// Citations are routed to margin notes (first occurrence) or inline numeric
+// citations (repeats) by citations.lua.
 
 // remove the note as a footnote ...
 #show footnote.entry: none

@@ -20,6 +20,9 @@ function Div(el)
     -- TYPST: Wrap in the marginalia #notefigure() command
     if quarto.doc.is_format("typst") then
       el.classes = el.classes:filter(function(c) return c ~= "notefigure" end)
+      el = el:walk({ Cite = function(c)
+        return pandoc.Span({ c }, pandoc.Attr("", { "no-footnote" }))
+      end })
       return pandoc.Blocks({
         pandoc.RawBlock('typst', '#notefigure(['),
         el,
