@@ -15,6 +15,20 @@ $table-hover-bg:        transparent;
 
 $secondary-color: mix($body-color, $light, 30%);
 
+// Shared style for metadata labels: title block, abstract, TOC.
+// `inherit` keeps the TOC's <h2>s off the heading font; `normal` undoes the
+// italic inherited from `.abstract`.
+@mixin meta-label {
+  font-family: inherit;
+  font-style: normal;
+  font-variant: normal;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  font-size: 0.75rem;
+  font-weight: 400;
+  opacity: 1;
+}
+
 // ── Base ─────────────────────────────────────────────────────────────
 body {
   font-feature-settings: "onum", "kern", "liga";
@@ -54,18 +68,24 @@ h1.title {
   max-width: 34ch;
 }
 
+// `page-columns` makes these grid containers, so margins never collapse and
+// top and bottom margins add up. All section spacing lives on heading tops.
+h1:not(.title) {
+  margin: 2rem 0 .75rem;
+}
+
 h2 {
   font-size: 1.625rem;
   line-height: 1.2;
   letter-spacing: -.005em;
-  margin: 3rem 0 .75rem;
+  margin: 1.75rem 0 .5rem;
   padding-bottom: 0;
   border-bottom: none !important;
 }
 
 h3 {
   font-size: 1.25rem;
-  margin: 2rem 0 .5rem;
+  margin: 1.25rem 0 .375rem;
 }
 
 // ── Title block ───────────────────────────────────────────────────────
@@ -73,11 +93,13 @@ h3 {
   font-size: 0.9375rem;
 }
 
-.quarto-title-meta-heading {
-  font-style: normal;
-  font-variant: small-caps;
-  letter-spacing: .06em;
-  font-size: 0.8125rem;
+// Long selector to match Quarto's specificity; a shorter one loses on
+// font-size. Margins stay Quarto's.
+#title-block-header.quarto-title-block.default {
+  .quarto-title-meta-heading,
+  .abstract .block-title {
+    @include meta-label;
+  }
 }
 
 // ── Abstract ─────────────────────────────────────────────────────────
@@ -228,6 +250,22 @@ section.footnotes {
 // ── TOC ──────────────────────────────────────────────────────────────
 #TOC, .sidebar nav[role="doc-toc"] {
   font-size: 13.5px;
+}
+
+// `toc-location: body` renders these outside `.sidebar`, where Quarto's
+// compact styling lives, so they need their own. No bottom margin: the next
+// h1 supplies the gap.
+#TOC {
+  margin: .5rem 0 0;
+
+  h2, .quarto-alternate-formats h2 {
+    @include meta-label;
+    margin: 0 0 .35rem;
+  }
+
+  ul { margin-bottom: 0; }
+
+  .quarto-alternate-formats { margin-top: 1.25rem; }
 }
 
 // ── Callouts ─────────────────────────────────────────────────────────
