@@ -5,6 +5,8 @@ typography:
   fonts:
     - family: EB Garamond
       source: google
+      weight: [400, 700]
+      style: [normal, italic]
     - family: JetBrains Mono
       source: google
     - family: Atkinson Hyperlegible Next

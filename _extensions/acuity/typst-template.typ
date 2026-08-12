@@ -118,8 +118,6 @@
   inset: 6pt,
   stroke: none
 )
-#show heading: set text(style: "italic")
-
 #show heading.where(level: 1): it => {
   pagebreak(weak: true)
   v(2em, weak: true)

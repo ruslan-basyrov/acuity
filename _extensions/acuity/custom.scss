@@ -1,8 +1,8 @@
 /*-- scss:defaults --*/
 $font-size-base:        1.125rem;   // 18px
 $line-height-base:      1.55;
-$headings-font-style:   italic;
-$headings-font-weight:  400;
+$headings-font-style:   normal;
+$headings-font-weight:  700;
 $link-decoration:       none;
 $link-hover-decoration: none;
 $table-border-color:    #111111;
@@ -33,11 +33,13 @@ a {
 
 // ── Headings ─────────────────────────────────────────────────────────
 h1, h2, h3, h4, h5, h6 {
-  font-weight: 400;
+  font-weight: 700;
   font-stretch: normal;
 }
 
 h1.title {
+  font-style: italic;
+  font-weight: 400;
   font-size: 3.375rem;
   line-height: 1.04;
   letter-spacing: -.008em;
@@ -87,6 +89,21 @@ h3 {
 
 // ── Body text ─────────────────────────────────────────────────────────
 p { hyphens: auto; }
+
+// ── Citations ────────────────────────────────────────────────────────
+.citation {
+  vertical-align: super;
+  font-size: 0.75em;
+  line-height: 0;
+}
+
+.column-margin .citation {
+  margin-right: 0.25em;
+}
+
+div.csl-entry .csl-right-inline {
+  padding-left: 0;
+}
 
 // ── Margin column ─────────────────────────────────────────────────────
 .column-margin {
