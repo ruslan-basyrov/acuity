@@ -1,8 +1,7 @@
 #import "@preview/marginalia:0.3.1": note, notefigure, wideblock
 #import "@preview/marginalia:0.3.1" as marginalia
 
-// Quarto colours a note callout with the brand's `primary`; every other callout
-// uses its semantic role. Send notes to `info` so both formats agree.
+// Quarto colours note callouts with the brand's primary, so send them to `info` to match HTML.
 #let quarto-callout = callout
 #let callout(background_color: none, icon_color: none, ..args) = quarto-callout(
   background_color: if icon_color == brand-color.primary { brand-color-background.info } else { background_color },
@@ -16,43 +15,32 @@
   top: 25mm,
   bottom: 25mm,
   book: false,
-  // default 12pt; tighter so citation-dense pages fit their notes
+  // Tighter than the 12pt default so pages with many notes still fit.
   clearance: 6pt,
 )
 
-// intercept footnote function with a sidenote function 
-// which works properly for citations in the note
+// One style for every margin note so references and remarks look the same.
+#let sidenote = marginalia.note.with(
+  text-style: (size: 8pt, style: "normal", weight: "regular"),
+  par-style: (spacing: 0.9em, leading: 0.45em, hanging-indent: 0pt),
+)
+
+// Turn every footnote into a margin note.
 #show footnote: it => {
-  marginalia.note(
+  sidenote(
     anchor-numbering: (..n) => super(numbering("1", ..n)),
     numbering: (..n) => super(numbering("1", ..n)) + h(0.25em),
-    // compact: the margin column cannot flow to the next page, so
-    // citation-dense pages need every point of vertical room
-    text-style: (size: 8pt, style: "normal", weight: "regular"),
-    par-style: (spacing: 0.9em, leading: 0.45em, hanging-indent: 0pt),
   )[#{
-    show place: none 
-    
-    // expand a citation to the full reference right in the sidenote
-    show cite: c => {
-      let ref-target = c.at("target", default: c.at("key", default: none))
-      if c.at("form", default: "normal") != "full" {
-        linebreak() + cite(ref-target, form: "full")
-      } else {
-        c
-      }
-    }
-
+    show place: none
     it.body
   }]
 }
 
-// Citations are routed to margin notes (first occurrence) or inline numeric
-// citations (repeats) by citations.lua.
+// citations.lua renders each citation as a bracketed number and calls `sidenote` for the reference.
 
-// remove the note as a footnote ...
+// Drop the copy of the note at the bottom of the page.
 #show footnote.entry: none
-// ... and also the line separating the footnote from the main page
+// Drop the line that separated that copy from the body.
 #set footnote.entry(separator: none)
 
 

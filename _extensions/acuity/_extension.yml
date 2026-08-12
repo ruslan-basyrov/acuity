@@ -56,9 +56,13 @@ contributes:
       template-partials:
         - typst-template.typ
         - typst-show.typ
+      cite-method: citeproc
       syntax-highlighting: idiomatic
       theme:
         - brand
       # The CSL file is hardcoded in `typst-template.typ`
       # until this issue is resolved: https://github.com/quarto-dev/quarto-cli/issues/11552
       # csl: custom.csl
+      # citation-location is intentionally NOT set: citations.lua generates
+      # margin notes itself; letting Quarto do it too creates nested #note()
+      # inside #footnote[] which breaks Typst's citation introspection.
