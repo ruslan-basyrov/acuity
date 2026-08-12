@@ -4,6 +4,8 @@
 # Results of compilation
 *.pdf
 *.html
+# but keep the script the extension ships
+!_extensions/**/*.html
 
 # Build artifacts
 _acuity/

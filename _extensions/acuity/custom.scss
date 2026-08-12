@@ -106,7 +106,7 @@ div.csl-entry .csl-right-inline {
 }
 
 // ── Margin column ─────────────────────────────────────────────────────
-.column-margin {
+.column-margin, .margin-caption {
   font-size: 13.5px;
   line-height: 1.5;
 
@@ -114,6 +114,13 @@ div.csl-entry .csl-right-inline {
 
   figcaption { font-size: 12.5px; }
 
+}
+
+// A reference cited from the margin stays in the block that cited it, on a
+// line of its own.
+.inline-ref {
+  display: block;
+  margin-top: 0.4em;
 }
 
 // ── Code blocks ──────────────────────────────────────────────────────

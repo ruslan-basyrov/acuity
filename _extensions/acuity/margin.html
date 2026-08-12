@@ -1,0 +1,46 @@
+<script>
+  // Every margin item sits in the grid row of the block it follows and then
+  // overflows that row, so two of them can end up on top of each other. Walk
+  // them in document order and push each one below the one before it.
+  // A wideblock takes the margin for itself, so it never moves, but everything
+  // after it starts below it.
+  (function () {
+    const clearance = 12;
+    const wide = window.matchMedia("(min-width: 992px)");
+    const selector =
+      ".column-margin.column-container, figcaption.margin-caption, .wideblock";
+    let queued = false;
+
+    function place() {
+      queued = false;
+      const items = document.querySelectorAll(selector);
+      items.forEach((el) => (el.style.transform = ""));
+      if (!wide.matches) return;
+      let bottom = -Infinity;
+      items.forEach((el) => {
+        const box = el.getBoundingClientRect();
+        if (box.height === 0) return;
+        if (el.classList.contains("wideblock")) {
+          bottom = Math.max(bottom, box.bottom);
+          return;
+        }
+        const shift = Math.max(0, bottom + clearance - box.top);
+        if (shift > 0) el.style.transform = "translateY(" + shift + "px)";
+        bottom = box.bottom + shift;
+      });
+    }
+
+    function schedule() {
+      if (queued) return;
+      queued = true;
+      window.requestAnimationFrame(place);
+    }
+
+    schedule();
+    window.addEventListener("load", schedule);
+    window.addEventListener("resize", schedule);
+    // Plots and fonts load after the first layout, so measure again whenever
+    // the page changes height.
+    new ResizeObserver(schedule).observe(document.documentElement);
+  })();
+</script>

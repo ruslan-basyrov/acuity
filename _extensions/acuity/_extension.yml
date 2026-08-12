@@ -25,6 +25,7 @@ contributes:
       filters:
         - at: pre-ast
           path: wideblock.lua
+        - captions.lua
         - citations.lua
         - sideblock.lua
       grid:
@@ -32,16 +33,18 @@ contributes:
         body-width: 700px
         margin-width: 400px
         # gutter-width: 1.5rem
+      # Nothing else places margin items relative to each other, so this does.
+      include-after-body: margin.html
       # code-block-border-left: true
       toc: true
       toc-title: "Contents"
       toc-location: body
       page-layout: article
-      # Matches the Typst side's region, so both formats quote titles the same way.
+      # The same region as the Typst side, so both formats quote titles alike.
       lang: en-GB
       reference-links: true
-      # citations.lua puts the short reference in the margin, so citeproc is left
-      # to render the full bibliography at the end, exactly as the PDF does.
+      # citations.lua puts the short reference in the margin, so citeproc only
+      # renders the full bibliography at the end, exactly as the PDF does.
       reference-location: document
       cite-method: citeproc
       csl: ieee.csl
@@ -55,6 +58,7 @@ contributes:
       filters:
         - at: pre-ast
           path: wideblock.lua
+        - captions.lua
         - citations.lua
         - sideblock.lua
       template-partials:
