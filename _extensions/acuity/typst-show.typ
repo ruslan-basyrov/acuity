@@ -36,7 +36,7 @@
   }]
 }
 
-// citations.lua renders each citation as a bracketed number and calls `sidenote` for the reference.
+// citations.lua renders each citation as a raised bracketed number and calls `sidenote` for the reference.
 
 // Drop the copy of the note at the bottom of the page.
 #show footnote.entry: none

@@ -25,6 +25,7 @@ contributes:
       filters:
         - at: pre-ast
           path: wideblock.lua
+        - citations.lua
         - sideblock.lua
       grid:
         sidebar-width: 0px
@@ -36,11 +37,14 @@ contributes:
       toc-title: "Contents"
       toc-location: body
       page-layout: article
+      # Matches the Typst side's region, so both formats quote titles the same way.
+      lang: en-GB
       reference-links: true
-      reference-location: margin
-      citation-location: margin
+      # citations.lua puts the short reference in the margin, so citeproc is left
+      # to render the full bibliography at the end, exactly as the PDF does.
+      reference-location: document
       cite-method: citeproc
-      csl: custom.csl
+      csl: ieee.csl
       syntax-highlighting: github
       respect-user-color-scheme: true
       theme:
