@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Cat">
+  <title>Cat</title>
+  <!-- Ears keep a flat span of skull between them and the eyes stay oversized:
+       that pairing is what still reads as a cat at 16px. Colours are the brand's
+       secondary, sand, and foreground. -->
+  <polygon points="5.5,12.5 7.8,1.8 14.2,7.2" fill="#52525B"/>
+  <polygon points="26.5,12.5 24.2,1.8 17.8,7.2" fill="#52525B"/>
+  <circle cx="16" cy="18.5" r="12.2" fill="#52525B"/>
+  <ellipse cx="10.9" cy="17.2" rx="4.4" ry="5" fill="#DDCC77"/>
+  <ellipse cx="21.1" cy="17.2" rx="4.4" ry="5" fill="#DDCC77"/>
+  <ellipse cx="10.9" cy="17.2" rx="0.85" ry="3.6" fill="#1C1B1B"/>
+  <ellipse cx="21.1" cy="17.2" rx="0.85" ry="3.6" fill="#1C1B1B"/>
+  <g stroke="#1C1B1B" stroke-width="1.4" stroke-linecap="round">
+    <line x1="7.3" y1="9.8" x2="13.3" y2="11.8"/>
+    <line x1="24.7" y1="9.8" x2="18.7" y2="11.8"/>
+  </g>
+</svg>

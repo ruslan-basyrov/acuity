@@ -1,4 +1,5 @@
 website:
+  favicon: favicon.svg
   navbar:
     tools:
       - icon: github
