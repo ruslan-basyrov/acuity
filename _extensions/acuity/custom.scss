@@ -268,6 +268,62 @@ section.footnotes {
   .quarto-alternate-formats { margin-top: 1.25rem; }
 }
 
+// ── Peek TOC ─────────────────────────────────────────────────────────
+// `peektoc.html` hangs this off the fixed header; absolute placement keeps it
+// out of the header's height, so it has to hide with the navbar on its own.
+.peektoc {
+  position: absolute;
+  inset-inline: 0;
+  top: 100%;
+  padding-inline: var(--peektoc-left, 1rem) 1rem;
+  background: $body-bg;
+  border-block-end: 1px solid $secondary-color;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .2s, visibility .2s;
+
+  &.is-visible { opacity: 1; visibility: visible; }
+}
+
+.headroom--unpinned .peektoc.is-visible {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.peektoc-current {
+  @include meta-label;
+  display: flex;
+  gap: .4rem;
+  max-width: 100%;
+  padding: .5rem 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+
+  &::after { content: "▾"; }
+  &[aria-expanded="true"]::after { content: "▴"; }
+}
+
+.peektoc-label {
+  color: $secondary-color;
+  &::after { content: " ·"; }
+}
+
+.peektoc-section {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.peektoc-list {
+  font-size: 13.5px;
+  padding-block-end: .75rem;
+
+  ul { margin: 0; padding: 0; list-style: none; }
+  li + li { margin-top: .25rem; }
+}
+
 // ── Callouts ─────────────────────────────────────────────────────────
 .callout {
   border-radius: 0;
@@ -275,8 +331,10 @@ section.footnotes {
 
 
 // ── Wide blocks ──────────────────────────────────────────────────────
-// Widen .wideblock directly
+// Narrower than 1216px the full width spills past the viewport.
 .wideblock {
-  width: calc(#{$grid-body-width} + #{$grid-margin-width} + 1.5rem);
-  max-width: none;
+  @media (min-width: 1216px) {
+    width: calc(#{$grid-body-width} + #{$grid-margin-width} + 1.5rem);
+    max-width: none;
+  }
 }

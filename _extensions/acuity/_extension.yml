@@ -34,7 +34,9 @@ contributes:
         margin-width: 400px
         # gutter-width: 1.5rem
       # Nothing else places margin items relative to each other, so this does.
-      include-after-body: margin.html
+      include-after-body:
+        - margin.html
+        - peektoc.html
       # code-block-border-left: true
       toc: true
       toc-title: "Contents"

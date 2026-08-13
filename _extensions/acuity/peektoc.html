@@ -1,0 +1,101 @@
+<script>
+  // A one-line stand-in for the contents list, shown once the real one has
+  // scrolled away. It lives inside the header to inherit the navbar's motion.
+  (function () {
+    const toc = document.querySelector("#TOC");
+    const header = document.querySelector("#quarto-header");
+    const list = toc && toc.querySelector("ul");
+    if (!toc || !header || !list) return;
+
+    const links = [...list.querySelectorAll('a[href^="#"]')];
+    const targets = links.map((a) =>
+      document.getElementById(decodeURIComponent(a.hash.slice(1))),
+    );
+    if (!links.length) return;
+
+    const band = document.createElement("div");
+    band.className = "peektoc";
+    band.innerHTML =
+      '<button class="peektoc-current" aria-expanded="false">' +
+      '<span class="peektoc-label">Contents</span>' +
+      '<span class="peektoc-section"></span></button>';
+
+    const panel = document.createElement("nav");
+    panel.className = "peektoc-list";
+    panel.setAttribute("aria-label", "Contents");
+    panel.hidden = true;
+    panel.appendChild(list.cloneNode(true));
+    // The clone would duplicate the TOC's ids.
+    panel.querySelectorAll("a").forEach((a) => a.removeAttribute("id"));
+    band.appendChild(panel);
+    header.appendChild(band);
+
+    const button = band.querySelector("button");
+    const section = band.querySelector(".peektoc-section");
+
+    function open(state) {
+      button.setAttribute("aria-expanded", String(state));
+      panel.hidden = !state;
+    }
+
+    button.addEventListener("click", () => open(panel.hidden));
+    // Quarto's anchor offset counts the navbar but not this line.
+    panel.addEventListener("click", (e) => {
+      const link = e.target.closest("a");
+      if (!link) return;
+      open(false);
+      const target = document.getElementById(decodeURIComponent(link.hash.slice(1)));
+      if (!target) return;
+      e.preventDefault();
+      window.scrollTo({
+        top:
+          target.getBoundingClientRect().top + window.scrollY -
+          header.clientHeight - band.offsetHeight,
+      });
+      history.replaceState(null, "", link.hash);
+    });
+    document.addEventListener("click", (e) => {
+      if (!band.contains(e.target)) open(false);
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") open(false);
+    });
+
+    // The TOC is display:none below the lg breakpoint; the title block is not.
+    const onscreen = new Set();
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((e) =>
+        e.isIntersecting ? onscreen.add(e.target) : onscreen.delete(e.target),
+      );
+      band.classList.toggle("is-visible", onscreen.size === 0);
+      if (onscreen.size) open(false);
+    });
+    [document.querySelector("#title-block-header"), toc]
+      .filter(Boolean)
+      .forEach((el) => observer.observe(el));
+
+    // A heading, not the TOC: a hidden element has no box to measure.
+    const column = document.querySelector("main h1") || toc;
+
+    let queued = false;
+    function update() {
+      queued = false;
+      band.style.setProperty("--peektoc-left", column.getBoundingClientRect().left + "px");
+      let active = links[0];
+      targets.forEach((el, i) => {
+        if (el && el.getBoundingClientRect().top <= 120) active = links[i];
+      });
+      section.textContent = active.textContent;
+    }
+
+    function schedule() {
+      if (queued) return;
+      queued = true;
+      window.requestAnimationFrame(update);
+    }
+
+    schedule();
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+  })();
+</script>
