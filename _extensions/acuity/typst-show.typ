@@ -38,6 +38,15 @@
 
 // citations.lua renders each citation as a raised bracketed number and calls `sidenote` for the reference.
 
+// The bibliography carries no margin notes, so give it the full page width. Its
+// heading stays outside the wide block, since the level-1 rule breaks the page
+// and a page break cannot happen inside one.
+#let typst-bibliography = bibliography
+#let bibliography(..args) = {
+  heading(level: 1)[Bibliography]
+  wideblock(typst-bibliography(..args, title: none))
+}
+
 // Drop the copy of the note at the bottom of the page.
 #show footnote.entry: none
 // Drop the line that separated that copy from the body.
