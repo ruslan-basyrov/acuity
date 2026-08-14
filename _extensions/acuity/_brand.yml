@@ -11,6 +11,8 @@ typography:
       source: google
     - family: Atkinson Hyperlegible Next
       source: google
+      weight: [400, 700]
+      style: [normal, italic]
     - family: Roboto
       source: google
   base: Atkinson Hyperlegible Next

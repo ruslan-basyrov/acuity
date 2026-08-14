@@ -124,3 +124,7 @@
   text(size: 14pt, weight: "bold", it)
   v(1em, weak: true)
 }
+
+// A caption can run to several lines, which centring leaves ragged on both
+// sides. Margin captions are already left-aligned by the sidenote.
+#show figure.caption: set align(left)
