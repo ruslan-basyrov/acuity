@@ -43,7 +43,7 @@
 // and a page break cannot happen inside one.
 #let typst-bibliography = bibliography
 #let bibliography(..args) = {
-  heading(level: 1)[Bibliography]
+  heading(level: 1)[References]
   wideblock(typst-bibliography(..args, title: none))
 }
 

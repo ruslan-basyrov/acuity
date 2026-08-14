@@ -4,8 +4,30 @@ local function markup(inlines)
   return pandoc.write(pandoc.Pandoc({ pandoc.Plain(inlines) }), "typst"):gsub("%s+$", "")
 end
 
+local function label_of(id)
+  return ('label("%s")'):format(id:gsub('[\\"]', "\\%0"))
+end
+
 local function key_of(c)
-  return ('label("%s")'):format(c.id:gsub('[\\"]', "\\%0"))
+  return label_of(c.id)
+end
+
+-- `nocite` asks for an entry in the bibliography without citing it in the text.
+-- Typst lists only what it sees cited, so each key needs a citation that prints
+-- nothing.
+local function silent_cites(meta)
+  local out = pandoc.List()
+  if meta.nocite then
+    meta.nocite:walk({
+      Cite = function(c)
+        for _, cit in ipairs(c.citations) do
+          out:insert(("#cite(%s, form: none)"):format(label_of(cit.id)))
+        end
+      end,
+    })
+  end
+  if #out == 0 then return nil end
+  return pandoc.RawBlock("typst", table.concat(out))
 end
 
 local function render(c)
@@ -46,6 +68,15 @@ local function dated(c)
   return (", accessed %s"):format(y)
 end
 
+-- Data is provenance rather than an argument, so it is cited in the text and in
+-- the bibliography but kept out of the margin, which belongs to the work the
+-- text engages with.
+local NO_MARGIN = { dataset = true }
+
+local function wants_margin(id)
+  return not NO_MARGIN[bib[id].type]
+end
+
 -- Builds "[1] Author, 'Title', 2019." for the margin, or the full entry if there is no title.
 local function short_ref(c)
   local key = key_of(c)
@@ -64,7 +95,7 @@ local function expand(el)
   local out, notes = pandoc.List(), pandoc.List()
   for _, c in ipairs(el.citations) do
     out:extend(render(c))
-    if not seen[c.id] then
+    if not seen[c.id] and wants_margin(c.id) then
       seen[c.id] = true
       -- Marked for a later pass, which either turns it into a note or leaves it
       -- in the block it came from, depending on where the citation is.
@@ -152,7 +183,7 @@ end
 local function expand_html(el)
   local out = pandoc.List({ el })
   for _, c in ipairs(el.citations) do
-    if bib[c.id] and not seen[c.id] then
+    if bib[c.id] and not seen[c.id] and wants_margin(c.id) then
       seen[c.id] = true
       out:insert(margin_ref(c))
     end
@@ -275,6 +306,9 @@ return {
   {
     Pandoc = function(doc)
       for _, r in ipairs(pandoc.utils.references(doc)) do bib[r.id] = r end
+      local cites = silent_cites(doc.meta)
+      if cites then doc.blocks:insert(cites) end
+      return doc
     end,
   },
   {
