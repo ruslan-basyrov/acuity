@@ -306,6 +306,15 @@ return {
   {
     Pandoc = function(doc)
       for _, r in ipairs(pandoc.utils.references(doc)) do bib[r.id] = r end
+      -- `typst-csl` arrives from _extension.yml already resolved to a path
+      -- relative to the project, which is what Typst wants. Raw, because a plain
+      -- value would have its underscores escaped into an invalid path.
+      local csl = doc.meta["typst-csl"]
+      if csl then
+        doc.meta["acuity-csl"] = pandoc.MetaInlines({
+          pandoc.RawInline("typst", pandoc.utils.stringify(csl)),
+        })
+      end
       local cites = silent_cites(doc.meta)
       if cites then doc.blocks:insert(cites) end
       return doc

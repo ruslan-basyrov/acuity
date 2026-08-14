@@ -44,7 +44,7 @@
 #let typst-bibliography = bibliography
 #let bibliography(..args) = {
   heading(level: 1)[References]
-  wideblock(typst-bibliography(..args, title: none))
+  wideblock(typst-bibliography(..args, title: none$if(acuity-csl)$, style: "$acuity-csl$"$endif$))
 }
 
 // Drop the copy of the note at the bottom of the page.
