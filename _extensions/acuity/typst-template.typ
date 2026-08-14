@@ -128,3 +128,6 @@
 // A caption can run to several lines, which centring leaves ragged on both
 // sides. Margin captions are already left-aligned by the sidenote.
 #show figure.caption: set align(left)
+// The margin column is too narrow to justify without wide word gaps and
+// hyphenation, so captions are set ragged right.
+#show figure.caption: set par(justify: false)
