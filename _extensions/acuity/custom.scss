@@ -15,6 +15,21 @@ $table-hover-bg:        transparent;
 
 $secondary-color: mix($body-color, $light, 30%);
 
+// Figure colours. A slot is a hue family with one step per background, so a
+// figure names the role and never the hex. Take slots in order. Wine and green
+// are left out: each is too close to the accent on one of the two backgrounds.
+:root {
+  --fig-accent: #{$primary};
+  --fig-slot1: #{$brand-blue};
+  --fig-slot2: #{$brand-purple};
+  --fig-slot3: #{$brand-olive};
+}
+
+body.quarto-dark {
+  --fig-slot1: #{$brand-cyan};
+  --fig-slot3: #{$brand-sand};
+}
+
 // Shared style for metadata labels: title block, abstract, TOC.
 // `inherit` keeps the TOC's <h2>s off the heading font; `normal` undoes the
 // italic inherited from `.abstract`.
