@@ -1,5 +1,38 @@
 local bib, seen = {}, {}
 
+local typst = quarto.doc.is_format("typst")
+
+-- `sidenote-citations: false` keeps references out of the margin. 
+-- A citation is printed in full by an author-date style.
+local margin = true
+
+local function read_options(meta)
+  margin = meta["sidenote-citations"] ~= false
+end
+
+-- A zero-width anchor on the first citation of a work
+local function mention_anchor(id)
+  if typst then
+    return pandoc.RawInline("typst", ('#box()#label("cite-%s")'):format(id))
+  end
+  return pandoc.Span({}, pandoc.Attr("cite-" .. id))
+end
+
+-- Works whose first mention is already anchored
+local marked = {}
+
+local function anchor(el)
+  local out = pandoc.List()
+  for _, c in ipairs(el.citations) do
+    if bib[c.id] and not marked[c.id] then
+      marked[c.id] = true
+      out:insert(mention_anchor(c.id))
+    end
+  end
+  out:insert(el)
+  return out
+end
+
 local function markup(inlines)
   return pandoc.write(pandoc.Pandoc({ pandoc.Plain(inlines) }), "typst"):gsub("%s+$", "")
 end
@@ -89,6 +122,8 @@ end
 
 -- Renders a citation, or returns nil if any key is missing from the bibliography.
 local function expand(el)
+  -- Plain citations are citeproc's to render; all this pass leaves is the anchor.
+  if not margin then return anchor(el) end
   for _, c in ipairs(el.citations) do
     if not bib[c.id] then return nil end
   end
@@ -129,6 +164,14 @@ local function lone_cite(n)
     cites:insert(c)
   end
   return pandoc.Cite(found.content, cites)
+end
+
+-- `^[@key]` sits against the word it follows, which suits a raised marker. A
+-- citation printed in full is part of the sentence and needs a space, an
+-- unbreakable one so the citation is never stranded at the start of a line.
+local function spaced(inlines)
+  if not margin then inlines:insert(1, pandoc.Str("\u{00A0}")) end
+  return inlines
 end
 
 -- "Daniela R." -> "D. R.", the way the bibliography style writes given names.
@@ -181,7 +224,8 @@ end
 
 -- HTML keeps citeproc's citation and adds a margin reference after the first one.
 local function expand_html(el)
-  local out = pandoc.List({ el })
+  local out = anchor(el)
+  if not margin then return out end
   for _, c in ipairs(el.citations) do
     if bib[c.id] and not seen[c.id] and wants_margin(c.id) then
       seen[c.id] = true
@@ -190,8 +234,6 @@ local function expand_html(el)
   end
   return out
 end
-
-local typst = quarto.doc.is_format("typst")
 
 -- Pulls the marked references out of an element, leaving the markers in place.
 local function take_refs(el)
@@ -279,18 +321,76 @@ local function float_refs(float, float_node)
   })
 end
 
+-- An entry points back at the first place its work is cited, from its number.
+local function backlinked(div)
+  local key = div.identifier:match("^ref%-(.+)$")
+  if not (key and marked[key]) then return nil end
+  return div:walk({
+    Span = function(s)
+      if not s.classes:includes("csl-left-margin") then return nil end
+      -- Typst reads a "1. " inside a link as a numbered list, so the space stays out.
+      local number, space = pandoc.List(s.content), pandoc.List()
+      while #number > 0 and number[#number].t == "Space" do
+        space:insert(1, table.remove(number))
+      end
+      if #number == 0 then return nil end
+      return pandoc.List({ pandoc.Link(number, "#cite-" .. key) }):extend(space)
+    end,
+  })
+end
+
+-- The bibliography gets the whole width, with the heading outside the wide block
+-- because a level-1 heading breaks the page.
+local function references(div)
+  return pandoc.Blocks({
+    pandoc.RawBlock("typst", "#heading(level: 1)[References]\n"
+      .. "#wideblock[#set par(hanging-indent: 1.5em, spacing: 0.9em)"),
+    div,
+    pandoc.RawBlock("typst", "]"),
+  })
+end
+
+-- Typst backlinks an entry only from a number it prints itself, so citeproc
+-- builds the bibliography here instead.
+local function citeproc_bibliography(doc)
+  doc.meta.csl = doc.meta["acuity-plain-csl"]
+  doc.meta["link-citations"] = true
+  doc = pandoc.utils.citeproc(doc)
+  -- Left in place, either key would have the template print a second bibliography.
+  doc.meta.csl, doc.meta.bibliography = nil, nil
+  return doc:walk({
+    -- The Typst writer cites a Cite element itself and ignores what citeproc
+    -- wrote into it, so only that rendering is kept.
+    Cite = function(c) return c.content end,
+    Div = function(div)
+      if div.identifier == "refs" then return references(div) end
+      return backlinked(div)
+    end,
+  })
+end
+
 if not quarto.doc.is_format("typst") then
   return {
     {
       Pandoc = function(doc)
         for _, r in ipairs(pandoc.utils.references(doc)) do bib[r.id] = r end
+        read_options(doc.meta)
+        if margin then return nil end
+        -- citeproc runs after this filter, so it reads the style set here.
+        doc.meta.csl = doc.meta["acuity-plain-csl"]
+        -- The marker is raised and spaced in CSS, which suits a number, not a name.
+        quarto.doc.include_text("in-header", [[<style>
+.citation { vertical-align: baseline; font-size: inherit; line-height: inherit; }
+.column-margin .citation { margin-right: 0; }
+</style>]])
+        return doc
       end,
     },
     {
       traverse = "topdown",
       Note = function(n)
         local cite = lone_cite(n)
-        if cite then return expand_html(cite), false end
+        if cite then return spaced(expand_html(cite)), false end
         return n, false
       end,
       Cite = function(el) return expand_html(el), false end,
@@ -306,6 +406,10 @@ return {
   {
     Pandoc = function(doc)
       for _, r in ipairs(pandoc.utils.references(doc)) do bib[r.id] = r end
+      read_options(doc.meta)
+      -- Plain mode builds the bibliography further down instead, where `nocite`
+      -- and the style are citeproc's business again.
+      if not margin then return nil end
       -- `typst-csl` arrives from _extension.yml already resolved to a path
       -- relative to the project, which is what Typst wants. Raw, because a plain
       -- value would have its underscores escaped into an invalid path.
@@ -327,7 +431,7 @@ return {
       local cite = lone_cite(n)
       if cite then
         local out = expand(cite)
-        if out then return out, false end
+        if out then return spaced(out), false end
       end
       return n, false
     end,
@@ -347,6 +451,13 @@ return {
     -- Whatever is left was cited from body text, so it becomes a note.
     Span = function(s)
       if s.classes:includes("column-margin") then return ref_note(s) end
+    end,
+  },
+  {
+    -- Late, so that the citations the passes above rewrote are all in place.
+    Pandoc = function(doc)
+      if margin then return nil end
+      return citeproc_bibliography(doc)
     end,
   },
 }

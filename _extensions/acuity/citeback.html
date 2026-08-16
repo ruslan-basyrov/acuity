@@ -1,0 +1,17 @@
+<script>
+  // Point each entry under References back at the first place its work is
+  // cited, from its number.
+  (function () {
+    document.querySelectorAll(".csl-entry[id^='ref-']").forEach((entry) => {
+      const mention = document.getElementById("cite-" + entry.id.slice(4));
+      const number = entry.querySelector(".csl-left-margin");
+      if (!mention || !number) return;
+      const back = document.createElement("a");
+      back.href = "#" + mention.id;
+      back.className = "csl-backlink";
+      back.setAttribute("role", "doc-backlink");
+      back.append(...number.childNodes);
+      number.append(back);
+    });
+  })();
+</script>

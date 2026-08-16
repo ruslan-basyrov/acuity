@@ -38,6 +38,17 @@
 
 // citations.lua renders each citation as a raised bracketed number and calls `sidenote` for the reference.
 
+// With `sidenote-citations: false` the citations and the bibliography come from
+// citeproc, which makes both of them links: a citation to its entry, and the
+// entry back to the first mention of it. The brand colours a link, but these two
+// are read as text, so they keep the colour of the text around them.
+#show link: it => {
+  let dest = if type(it.dest) == label { str(it.dest) } else { "" }
+  if dest.starts-with("ref-") or dest.starts-with("cite-") {
+    text(fill: brand-color.foreground, it)
+  } else { it }
+}
+
 // The bibliography carries no margin notes, so give it the full page width. Its
 // heading stays outside the wide block, since the level-1 rule breaks the page
 // and a page break cannot happen inside one.
