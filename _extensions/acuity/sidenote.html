@@ -1,0 +1,17 @@
+<script>
+  (function () {
+    const notes = document.querySelectorAll(
+      ".column-margin [id^='fn']:not([id^='fnref'])");
+    notes.forEach((note) => {
+      const ref = document.getElementById("fnref" + note.id.slice(2));
+      const marker = note.querySelector("sup");
+      if (!ref || !marker || marker.querySelector("a")) return;
+      const back = document.createElement("a");
+      back.href = "#" + ref.id;
+      back.setAttribute("role", "doc-backlink");
+      back.className = "sidenote-back";
+      back.append(...marker.childNodes);
+      marker.append(back);
+    });
+  })();
+</script>
