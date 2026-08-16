@@ -350,15 +350,43 @@ local function references(div)
   })
 end
 
+-- Quarto resolves a crossref only after this filter, so `@fig-1` is still a
+-- citation here and citeproc would print it as a missing entry. A key the
+-- bibliography does not know is a crossref, so it is set aside and put back
+-- once the bibliography is built.
+local function take_crossrefs(doc)
+  local kept = pandoc.List()
+  return doc:walk({
+    Cite = function(c)
+      for _, cit in ipairs(c.citations) do
+        if bib[cit.id] then return nil end
+      end
+      kept:insert(c)
+      return pandoc.Span({}, pandoc.Attr("acuity-crossref-" .. #kept))
+    end,
+  }), kept
+end
+
+local function put_crossrefs(doc, kept)
+  return doc:walk({
+    Span = function(s)
+      local i = s.identifier:match("^acuity%-crossref%-(%d+)$")
+      if i then return kept[tonumber(i)] end
+    end,
+  })
+end
+
 -- Typst backlinks an entry only from a number it prints itself, so citeproc
 -- builds the bibliography here instead.
 local function citeproc_bibliography(doc)
+  local crossrefs
+  doc, crossrefs = take_crossrefs(doc)
   doc.meta.csl = doc.meta["acuity-plain-csl"]
   doc.meta["link-citations"] = true
   doc = pandoc.utils.citeproc(doc)
   -- Left in place, either key would have the template print a second bibliography.
   doc.meta.csl, doc.meta.bibliography = nil, nil
-  return doc:walk({
+  doc = doc:walk({
     -- The Typst writer cites a Cite element itself and ignores what citeproc
     -- wrote into it, so only that rendering is kept.
     Cite = function(c) return c.content end,
@@ -367,6 +395,7 @@ local function citeproc_bibliography(doc)
       return backlinked(div)
     end,
   })
+  return put_crossrefs(doc, crossrefs)
 end
 
 if not quarto.doc.is_format("typst") then
