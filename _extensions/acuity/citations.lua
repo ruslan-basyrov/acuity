@@ -334,7 +334,11 @@ local function backlinked(div)
         space:insert(1, table.remove(number))
       end
       if #number == 0 then return nil end
-      return pandoc.List({ pandoc.Link(number, "#cite-" .. key) }):extend(space)
+      local linked = pandoc.List({ pandoc.Link(number, "#cite-" .. key) }):extend(space)
+      -- HTML sets the number beside the entry by the class it carries, so the
+      -- span stays.
+      if not typst then return pandoc.Span(linked, s.attr) end
+      return linked
     end,
   })
 end
@@ -357,9 +361,13 @@ end
 -- because a level-1 heading breaks the page.
 local function section(title, entries, attr)
   if not typst then
+    -- Quarto's own class, which places the list on the page grid: a width of
+    -- its own cannot meet the grid lines, and overhangs the margin column.
+    local classes = pandoc.List(attr.classes)
+    classes:insert("column-page-right")
     return pandoc.Blocks({
       pandoc.Header(1, pandoc.Str(title)),
-      pandoc.Div(entries, attr),
+      pandoc.Div(entries, pandoc.Attr(attr.identifier, classes, attr.attributes)),
     })
   end
   return pandoc.Blocks({
@@ -402,8 +410,9 @@ local function references(div, label)
   local out = section("References", literature, div.attr)
   for i, category in ipairs(CATEGORIES) do
     if #listed[i] > 0 then
+      -- The same classes as the list it came out of, so it is styled alike.
       out:extend(section(category.title, listed[i],
-        pandoc.Attr("refs-" .. category.type)))
+        pandoc.Attr("refs-" .. category.type, div.attr.classes, div.attr.attributes)))
     end
   end
   return out
@@ -492,9 +501,14 @@ if not quarto.doc.is_format("typst") then
         read_options(doc.meta)
         if margin then return nil end
         -- The marker is raised and spaced in CSS, which suits a number, not a name.
+        -- The entry layout is set here too: Quarto styles a bibliography it
+        -- builds itself, and this one is built in the filter.
         quarto.doc.include_text("in-header", [[<style>
 .citation { vertical-align: baseline; font-size: inherit; line-height: inherit; }
 .column-margin .citation { margin-right: 0; }
+div.csl-entry { clear: both; margin-bottom: 0.4em; }
+div.csl-left-margin { min-width: 3em; float: left; }
+div.csl-right-inline { margin-left: 3em; }
 </style>]])
         return doc
       end,
