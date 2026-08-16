@@ -339,14 +339,85 @@ local function backlinked(div)
   })
 end
 
--- The bibliography gets the whole width, with the heading outside the wide block
+-- Material that is used rather than argued with is listed apart from the
+-- literature, each kind in a section of its own and in the order given here.
+local CATEGORIES = {
+  { type = "dataset", title = "Data", mark = "D" },
+  { type = "software", title = "Software", mark = "S" },
+}
+
+local function category_of(key)
+  if not bib[key] then return nil end
+  for i, category in ipairs(CATEGORIES) do
+    if bib[key].type == category.type then return i end
+  end
+end
+
+-- A section gets the whole width, with the heading outside the wide block
 -- because a level-1 heading breaks the page.
-local function references(div)
+local function section(title, entries, attr)
+  if not typst then
+    return pandoc.Blocks({
+      pandoc.Header(1, pandoc.Str(title)),
+      pandoc.Div(entries, attr),
+    })
+  end
   return pandoc.Blocks({
-    pandoc.RawBlock("typst", "#heading(level: 1)[References]\n"
+    pandoc.RawBlock("typst", ("#heading(level: 1)[%s]\n"):format(title)
       .. "#wideblock[#set par(hanging-indent: 1.5em, spacing: 0.9em)"),
-    div,
+    pandoc.Div(entries, attr),
     pandoc.RawBlock("typst", "]"),
+  })
+end
+
+-- Citeproc numbers the whole bibliography in one series. An entry outside the
+-- literature carries the label it has in its own section instead, so that each
+-- section counts from one. The number is the entry's first word, whether or not
+-- it has been linked back to the text by then.
+local function relabel(entry, label)
+  local done = false
+  return entry:walk({
+    Str = function(str)
+      if done or not str.text:match("^%d+%.?$") then return nil end
+      done = true
+      return pandoc.Str((str.text:gsub("^%d+", label)))
+    end,
+  })
+end
+
+-- Splits the bibliography, and records the label each entry moved out of it has.
+local function references(div, label)
+  local literature, listed = pandoc.List(), {}
+  for i = 1, #CATEGORIES do listed[i] = pandoc.List() end
+  for _, entry in ipairs(div.content) do
+    local key = entry.t == "Div" and entry.identifier:match("^ref%-(.+)$")
+    local i = key and category_of(key)
+    if i then
+      label[key] = CATEGORIES[i].mark .. (#listed[i] + 1)
+      listed[i]:insert(relabel(entry, label[key]))
+    else
+      literature:insert(entry)
+    end
+  end
+  local out = section("References", literature, div.attr)
+  for i, category in ipairs(CATEGORIES) do
+    if #listed[i] > 0 then
+      out:extend(section(category.title, listed[i],
+        pandoc.Attr("refs-" .. category.type)))
+    end
+  end
+  return out
+end
+
+-- A marker in the text prints citeproc's number, which the split has changed.
+local function relabel_marks(blocks, label)
+  return blocks:walk({
+    Link = function(l)
+      local key = l.target:match("^#ref%-(.+)$")
+      if not (key and label[key]) then return nil end
+      return pandoc.Link(pandoc.Inlines({ pandoc.Str(label[key]) }),
+        l.target, l.title, l.attr)
+    end,
   })
 end
 
@@ -354,9 +425,12 @@ end
 -- citation here and citeproc would print it as a missing entry. A key the
 -- bibliography does not know is a crossref, so it is set aside and put back
 -- once the bibliography is built.
+-- Only the body is searched: a `nocite` key names a work to list rather than
+-- cite, so it is absent from the bibliography read above and would be mistaken
+-- for a crossref here.
 local function take_crossrefs(doc)
   local kept = pandoc.List()
-  return doc:walk({
+  doc.blocks = doc.blocks:walk({
     Cite = function(c)
       for _, cit in ipairs(c.citations) do
         if bib[cit.id] then return nil end
@@ -364,20 +438,24 @@ local function take_crossrefs(doc)
       kept:insert(c)
       return pandoc.Span({}, pandoc.Attr("acuity-crossref-" .. #kept))
     end,
-  }), kept
+  })
+  return doc, kept
 end
 
 local function put_crossrefs(doc, kept)
-  return doc:walk({
+  doc.blocks = doc.blocks:walk({
     Span = function(s)
       local i = s.identifier:match("^acuity%-crossref%-(%d+)$")
       if i then return kept[tonumber(i)] end
     end,
   })
+  return doc
 end
 
 -- Typst backlinks an entry only from a number it prints itself, so citeproc
--- builds the bibliography here instead.
+-- builds the bibliography here instead. In HTML the list is built here too, so
+-- that both formats can split it: no filter runs late enough to see the one
+-- Quarto's own citeproc would write.
 local function citeproc_bibliography(doc)
   local crossrefs
   doc, crossrefs = take_crossrefs(doc)
@@ -386,15 +464,23 @@ local function citeproc_bibliography(doc)
   doc = pandoc.utils.citeproc(doc)
   -- Left in place, either key would have the template print a second bibliography.
   doc.meta.csl, doc.meta.bibliography = nil, nil
+  local label = {}
   doc = doc:walk({
     -- The Typst writer cites a Cite element itself and ignores what citeproc
-    -- wrote into it, so only that rendering is kept.
-    Cite = function(c) return c.content end,
+    -- wrote into it, so only that rendering is kept. In HTML the rendering is
+    -- kept for the opposite reason: left as a citation, Quarto's own citeproc
+    -- pass would render it a second time and, the bibliography now being gone,
+    -- print it as missing.
+    Cite = function(c)
+      if typst then return c.content end
+      return pandoc.Span(c.content, pandoc.Attr("", { "citation" }))
+    end,
     Div = function(div)
-      if div.identifier == "refs" then return references(div) end
+      if div.identifier == "refs" then return references(div, label) end
       return backlinked(div)
     end,
   })
+  doc.blocks = relabel_marks(doc.blocks, label)
   return put_crossrefs(doc, crossrefs)
 end
 
@@ -405,8 +491,6 @@ if not quarto.doc.is_format("typst") then
         for _, r in ipairs(pandoc.utils.references(doc)) do bib[r.id] = r end
         read_options(doc.meta)
         if margin then return nil end
-        -- citeproc runs after this filter, so it reads the style set here.
-        doc.meta.csl = doc.meta["acuity-plain-csl"]
         -- The marker is raised and spaced in CSS, which suits a number, not a name.
         quarto.doc.include_text("in-header", [[<style>
 .citation { vertical-align: baseline; font-size: inherit; line-height: inherit; }
@@ -427,6 +511,13 @@ if not quarto.doc.is_format("typst") then
     {
       Div = block_refs,
       FloatRefTarget = float_refs,
+    },
+    {
+      -- Late, so that the citations the passes above rewrote are all in place.
+      Pandoc = function(doc)
+        if margin then return nil end
+        return citeproc_bibliography(doc)
+      end,
     },
   }
 end

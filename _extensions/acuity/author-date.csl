@@ -46,16 +46,45 @@
     </choose>
   </macro>
 
-  <citation et-al-min="3" et-al-use-first="1" disambiguate-add-year-suffix="true">
+  <!-- Data is listed and numbered apart from the literature, so it is cited by
+       its number there rather than by author and year, which for a dataset are
+       the depositor and the edition. -->
+  <macro name="category">
+    <choose>
+      <if type="dataset">
+        <text value="2"/>
+      </if>
+      <else-if type="software">
+        <text value="3"/>
+      </else-if>
+      <else>
+        <text value="1"/>
+      </else>
+    </choose>
+  </macro>
+
+  <citation et-al-min="3" et-al-use-first="1" disambiguate-add-year-suffix="true"
+            collapse="citation-number">
+    <!-- Collapsing joins a run of numbers, which the keys have to be in. -->
+    <sort>
+      <key variable="citation-number"/>
+    </sort>
     <layout prefix="(" suffix=")" delimiter="; ">
-      <group delimiter=", ">
-        <text macro="author-short"/>
-        <date variable="issued" form="numeric" date-parts="year"/>
-        <group delimiter=" ">
-          <label variable="locator" form="short"/>
-          <text variable="locator"/>
-        </group>
-      </group>
+      <choose>
+        <if type="dataset software">
+          <text variable="citation-number"/>
+        </if>
+        <else>
+          <group delimiter=", ">
+            <text macro="author-short"/>
+            <date variable="issued" form="numeric" date-parts="year"/>
+            <group delimiter=" ">
+              <label variable="locator" form="short"/>
+              <text variable="locator"/>
+            </group>
+          </group>
+        </else>
+      </choose>
     </layout>
   </citation>
 
@@ -63,6 +92,7 @@
        that each format can hang the link back to the first mention on it. -->
   <bibliography second-field-align="flush">
     <sort>
+      <key macro="category"/>
       <key macro="author"/>
       <key variable="issued"/>
     </sort>
