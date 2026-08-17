@@ -341,6 +341,7 @@ section.footnotes {
   padding-block-end: .75rem;
 
   ul { margin: 0; padding: 0; list-style: none; }
+  li ul { padding-inline-start: 1.2em; }
   li + li { margin-top: .25rem; }
 }
 
