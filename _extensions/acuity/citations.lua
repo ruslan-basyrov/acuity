@@ -366,7 +366,8 @@ local function section(title, entries, attr)
     local classes = pandoc.List(attr.classes)
     classes:insert("column-page-right")
     return pandoc.Blocks({
-      pandoc.Header(1, pandoc.Str(title)),
+      -- Make the sections have link in TOC
+      pandoc.Header(1, pandoc.Str(title), pandoc.Attr("sec-" .. attr.identifier)),
       pandoc.Div(entries, pandoc.Attr(attr.identifier, classes, attr.attributes)),
     })
   end

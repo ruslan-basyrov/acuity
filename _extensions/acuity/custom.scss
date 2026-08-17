@@ -147,6 +147,38 @@ div.csl-entry .csl-right-inline {
   text-decoration: none;
 }
 
+// A bibliography grows without bound and would come to set the length of the
+// page. Capped, it costs one screen however long it gets and scrolls on its
+// own. A jump to an entry still lands, since the browser scrolls the nearest
+// scrollable box as well as the page.
+.csl-bib-body {
+  max-height: 70vh;
+  overflow-y: auto;
+  // Room for the scrollbar, so it does not sit on the text.
+  padding-inline-end: 1rem;
+
+  .csl-entry { scroll-margin-block: .5rem; }
+
+  // The bar is part of the page rather than of the browser: a thin thumb in
+  // the muted ink the margin already uses, no track drawn at all, and the
+  // accent under the pointer.
+  scrollbar-width: thin;
+  scrollbar-color: $secondary transparent;
+  &:hover { scrollbar-color: $primary transparent; }
+
+  // WebKit before Chrome 121 reads none of the above.
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: $secondary; }
+  &:hover::-webkit-scrollbar-thumb { background: $primary; }
+
+  @media print {
+    max-height: none;
+    overflow: visible;
+    padding-inline-end: 0;
+  }
+}
+
 // ── Margin column ─────────────────────────────────────────────────────
 .column-margin, .margin-caption {
   font-size: 13.5px;
@@ -156,6 +188,11 @@ div.csl-entry .csl-right-inline {
 
   figcaption { font-size: 12.5px; }
 
+  // Quarto puts every margin item on `z-index: 998`, and a grid item with a
+  // z-index is a stacking context, so a cross-reference popup opened inside one
+  // cannot rise above the margin items that follow it. Lift the item that holds
+  // the popup. The navbar sits at 1030 and stays clear.
+  &:has([data-tippy-root]) { z-index: 1000; }
 }
 
 // A reference cited from the margin stays in the block that cited it, on a
