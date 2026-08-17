@@ -33,6 +33,26 @@
 #let quarto-notefigure = notefigure
 #let notefigure(..args) = quarto-notefigure(..args.pos(), ..args.named() + (alignment: "top"))
 
+// Unfinished text, marked by `::: draft` and `[...]{.draft}`. The wash shows
+// how far the run goes; the label is what says the text is not done. It bleeds
+// into the left margin, away from the notes on the right.
+#let draftblock(body) = block(
+  width: 100%,
+  fill: brand-color-background.sand,
+  outset: (left: 8mm, right: 3mm, y: 3mm),
+  above: 1.4em,
+  below: 1.4em,
+  {
+    block(
+      below: 0.6em,
+      text(size: 7pt, tracking: 0.08em, fill: brand-color.primary, upper("draft")),
+    )
+    body
+  },
+)
+
+#let draftspan(body) = highlight(fill: brand-color-background.sand, extent: 1pt, body)
+
 // Turn every footnote into a margin note.
 #show footnote: it => {
   sidenote(

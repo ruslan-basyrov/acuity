@@ -396,3 +396,74 @@ section.footnotes {
     max-width: none;
   }
 }
+
+
+// ── Draft marks ──────────────────────────────────────────────────────
+// Unfinished text sits on a warmer paper. The wash shows how far the run
+// goes and is kept faint so a mostly unfinished document stays readable;
+// the label is what says the text is not done.
+:root {
+  --draft-wash: #{mix($brand-sand, $brand-white, 15%)};
+}
+
+body.quarto-dark {
+  --draft-wash: #{mix($brand-sand, $brand-black, 12%)};
+}
+
+// The wash bleeds into the left margin, away from the notes on the right, so
+// it reads as a change of paper rather than a box on the page. It never
+// reaches past the text on the right, which would widen the page.
+@mixin draft-wash {
+  background: var(--draft-wash);
+  margin-left: -1.25rem;
+  padding-left: 1.25rem;
+  padding-right: 1rem;
+}
+
+@mixin draft-label {
+  content: "draft";
+  display: block;
+  @include meta-label;
+  color: $primary;
+}
+
+div.draft:not(.page-columns) {
+  @include draft-wash;
+  padding-top: 0.9rem;
+  padding-bottom: 1rem;
+
+  &::before {
+    @include draft-label;
+    margin-bottom: 0.4rem;
+  }
+
+  > :last-child { margin-bottom: 0; }
+}
+
+// A run that holds a margin note becomes a page-wide grid, so the wash goes on
+// the children that carry the text rather than on the run itself. The grid has
+// no gaps, so turning the paragraph margins into padding keeps the wash whole.
+// A pseudo-element is not a child, and needs its column named.
+div.draft.page-columns {
+  &::before {
+    @include draft-label;
+    @include draft-wash;
+    grid-column: body-content-start / body-content-end;
+    padding-top: 0.9rem;
+    padding-bottom: 0.4rem;
+  }
+
+  > *:not(.column-margin) {
+    @include draft-wash;
+    margin-bottom: 0;
+    padding-bottom: 1rem;
+  }
+}
+
+span.draft {
+  background: var(--draft-wash);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  padding: 0.05em 0.25em;
+  margin: 0 -0.1em;
+}

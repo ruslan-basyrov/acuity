@@ -1,6 +1,6 @@
 title: Acuity
 author: Ruslan Basyrov
-version: 0.1.6
+version: 0.1.7
 quarto-required: ">=1.8.0"
 contributes:
   # This doesn't with `website` project,
@@ -28,6 +28,7 @@ contributes:
         - captions.lua
         - citations.lua
         - sideblock.lua
+        - draft.lua
       grid:
         sidebar-width: 0px
         body-width: 700px
@@ -68,6 +69,7 @@ contributes:
         - captions.lua
         - citations.lua
         - sideblock.lua
+        - draft.lua
       template-partials:
         - typst-template.typ
         - typst-show.typ
