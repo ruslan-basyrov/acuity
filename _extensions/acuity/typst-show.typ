@@ -25,6 +25,14 @@
   par-style: (spacing: 0.9em, leading: 0.45em, hanging-indent: 0pt),
 )
 
+// Quarto anchors a margin figure at the first baseline of its caption, which
+// puts the anchor a whole figure height above the line the figure sits on.
+// Marginalia orders the margin by those anchors, so a figure can overtake a note
+// that comes before it in the text. Anchoring the top of the figure keeps the
+// margin in the order of the source.
+#let quarto-notefigure = notefigure
+#let notefigure(..args) = quarto-notefigure(..args.pos(), ..args.named() + (alignment: "top"))
+
 // Turn every footnote into a margin note.
 #show footnote: it => {
   sidenote(
