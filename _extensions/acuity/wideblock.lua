@@ -6,12 +6,21 @@
 -- captions.lua skips any float that already has a caption location.
 local function pin_caption(el)
   el.attributes["cap-location"] = "bottom"
-  el.content = el.content:walk({ Div = function(d)
-    if d.identifier:match("^fig%-") or d.identifier:match("^tbl%-") then
-      d.attributes["cap-location"] = "bottom"
-    end
-    return d
-  end })
+  el.content = el.content:walk({
+    Div = function(d)
+      if d.identifier:match("^fig%-") or d.identifier:match("^tbl%-") then
+        d.attributes["cap-location"] = "bottom"
+      end
+      return d
+    end,
+    -- A labelled markdown table is a Table, not a Div, and this early its
+    -- label still sits in the caption text, so every table is pinned. The
+    -- caption stays where tables put it: on top.
+    Table = function(t)
+      t.attributes["cap-location"] = "top"
+      return t
+    end,
+  })
   return el
 end
 
@@ -29,8 +38,11 @@ function Div(el)
         pandoc.RawBlock('typst', ']'),
       })
     end
-    -- HTML: handled by the .wideblock rule in custom.scss
-    return el
+    -- HTML: handled by the .wideblock rule in custom.scss. A float is rebuilt
+    -- into a panel and its classes are stripped, so the class rides on a plain
+    -- wrapper div instead, which the rebuild leaves alone.
+    el.classes = el.classes:filter(function(c) return c ~= "wideblock" end)
+    return pandoc.Div(el, pandoc.Attr("", {"wideblock"}))
 
   elseif el.classes:includes("notefigure") then
     el = pin_caption(el)

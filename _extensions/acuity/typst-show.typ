@@ -53,6 +53,22 @@
 
 #let draftspan(body) = highlight(fill: brand-color-background.sand, extent: 1pt, body)
 
+// Tables. tables.lua drops the column widths pandoc reads out of the
+// markdown source, so columns size to their content. Rules sit at 60% ink,
+// below the text, the way a plot's frame sits below its marks.
+#let tablerule = 0.7pt + brand-color.foreground.transparentize(40%)
+#show table: set par(justify: false)
+#show table: set text(hyphenate: false, size: 9pt, number-width: "tabular")
+#show table: set align(left)
+#set table(inset: (x: 0.6em, y: 0.5em), stroke: none)
+#set table.hline(stroke: tablerule)
+#show table.cell.where(y: 0): set text(weight: "bold")
+#show table: it => block(stroke: (top: tablerule, bottom: tablerule), inset: (y: 0.4em), it)
+
+// Captions take the secondary colour. A caption moved to the margin is
+// excepted and keeps the sidenotes' ink (captions.lua).
+#show figure.caption: set text(size: 8.5pt, fill: brand-color.secondary)
+
 // Turn every footnote into a margin note.
 #show footnote: it => {
   sidenote(

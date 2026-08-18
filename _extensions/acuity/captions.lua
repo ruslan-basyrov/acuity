@@ -15,7 +15,8 @@ local function to_margin(float_node)
   return pandoc.Blocks({
     pandoc.RawBlock("typst", "#[\n#set figure(gap: 0pt)\n" ..
       "#show figure.caption: it => sidenote(alignment: \"top\", dy: -0.01pt, " ..
-      "counter: none, shift: \"avoid\", keep-order: true)[#it]\n"),
+      "counter: none, shift: \"avoid\", keep-order: true)[#it]\n" ..
+      "#show figure.caption: set text(size: 8pt, fill: brand-color.foreground)\n"),
     float_node,
     pandoc.RawBlock("typst", "]\n"),
   })
