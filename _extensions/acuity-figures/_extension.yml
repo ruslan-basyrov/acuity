@@ -1,6 +1,6 @@
 title: Acuity Figures
 author: Ruslan Basyrov
-version: 0.1.0
+version: 0.1.1
 quarto-required: ">=1.8.0"
 
 # Extension prerenders a single code of Observable Plot to both PDF (Typst) and
