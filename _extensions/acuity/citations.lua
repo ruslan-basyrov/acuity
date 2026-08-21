@@ -519,7 +519,7 @@ div.csl-right-inline { margin-left: 3em; }
       Note = function(n)
         local cite = lone_cite(n)
         if cite then return spaced(expand_html(cite)), false end
-        return n, false
+        return n:walk({ Cite = anchor }), false
       end,
       Cite = function(el) return expand_html(el), false end,
     },
@@ -568,7 +568,9 @@ return {
         local out = expand(cite)
         if out then return spaced(out), false end
       end
-      return n, false
+      -- As in HTML: the note keeps its citations, anchored so that an entry can
+      -- point back at them.
+      return n:walk({ Cite = anchor }), false
     end,
     Header = function(h) return h, false end,
     Span = function(s)
