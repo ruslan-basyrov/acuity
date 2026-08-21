@@ -3,7 +3,7 @@
 //
 //   HTML         -> an {ojs} cell, interactive in the browser (Plot, d3 ambient)
 //   Typst        -> the figure runs here, in Deno, drawn into JSDOM
-//   staticFigure -> render the SVG once, show it in both formats
+//   staticFigure -> render the SVG once: inlined in HTML, the file in Typst
 //
 // Runs on Quarto's bundled Deno, so Quarto is the only dependency.
 
@@ -181,12 +181,25 @@ const writeSvg = async (name: string, src: string) => {
     `${outDir}/svgs/${name}.svg`,
     '<?xml version="1.0" encoding="utf-8"?>\n' + svg.outerHTML,
   );
+  // the inline copy scales with its container, as the file does through the
+  // include's width=100%; background:none shields it from the white
+  // background the browser-side Plot paints on every .plot-* figure
+  svg.setAttribute("style", "display:block;width:100%;height:auto;background:none");
+  return svg.outerHTML;
 };
 
-// Build the include Quarto stitches in: an OJS cell in HTML, the SVG in Typst,
-// or the SVG in both for a static figure
-const include = async (name: string, src: string) =>
-  src.includes("staticFigure") ? svgRef(name) : `::: {.content-visible when-format="html"}
+// Build the include Quarto stitches in: an OJS cell in HTML, the SVG in Typst.
+// A static figure inlines its baked SVG in HTML, so page css can theme it
+const include = async (name: string, src: string, svg: string) =>
+  src.includes("staticFigure") ? `::: {.content-visible when-format="html"}
+\`\`\`{=html}
+${svg}
+\`\`\`
+:::
+
+::: {.content-visible when-format="typst"}
+${svgRef(name)}:::
+` : `::: {.content-visible when-format="html"}
 \`\`\`{ojs}
 //| echo: false
 ${await htmlCell(src)}
@@ -206,6 +219,6 @@ for await (const entry of Deno.readDir(figuresDir)) {
   if (!entry.name.endsWith(".fig.js")) continue;
   const name = entry.name.slice(0, -".fig.js".length);
   const src = await Deno.readTextFile(`${figuresDir}/${entry.name}`);
-  await Deno.writeTextFile(`${outDir}/${name}.qmd`, await include(name, src));
-  await writeSvg(name, src);
+  const svg = await writeSvg(name, src);
+  await Deno.writeTextFile(`${outDir}/${name}.qmd`, await include(name, src, svg));
 }
