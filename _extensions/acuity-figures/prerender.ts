@@ -17,6 +17,7 @@ const projectDir = Deno.env.get("QUARTO_PROJECT_DIR") ?? Deno.cwd();
 const figuresDir = `${projectDir}/figures`;
 const outDir = `${projectDir}/build/figures`;
 const svgRef = (name: string) => `![](build/figures/svgs/${name}.svg){width=100%}\n`;
+const figkit = await Deno.readTextFile(new URL("./runtime/figkit.js", import.meta.url));
 
 // Inline every file a figure loadText()s: a browser can't fetch _brand.yml,
 // because Quarto doesn't publish _extensions/
@@ -218,7 +219,7 @@ await Deno.mkdir(`${outDir}/svgs`, { recursive: true });
 for await (const entry of Deno.readDir(figuresDir)) {
   if (!entry.name.endsWith(".fig.js")) continue;
   const name = entry.name.slice(0, -".fig.js".length);
-  const src = await Deno.readTextFile(`${figuresDir}/${entry.name}`);
+  const src = figkit + "\n" + await Deno.readTextFile(`${figuresDir}/${entry.name}`);
   const svg = await writeSvg(name, src);
   await Deno.writeTextFile(`${outDir}/${name}.qmd`, await include(name, src, svg));
 }
