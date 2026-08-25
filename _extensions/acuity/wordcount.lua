@@ -9,7 +9,7 @@ local REPORT = "build/wordcount.txt"
 local NAME = 40 -- width of the section column
 
 -- Divs that are not body text.
-local DROP = { references = true, appendix = true, hidden = true }
+local DROP = { references = true, appendix = true, hidden = true, draft = true }
 
 -- Level-one sections that are not body text, by class or by Quarto's id.
 local DROP_SECTION = { references = true, bibliography = true, appendix = true }
@@ -25,6 +25,12 @@ local SILENT = {
   RawInline = function() return {} end,
   Math = function() return {} end,
   Cite = function() return {} end,
+  Span = function(el)
+    if el.classes:includes("draft") then return {} end
+  end,
+  Div = function(el)
+    if el.classes:includes("draft") then return {} end
+  end,
 }
 
 local function words(el)
