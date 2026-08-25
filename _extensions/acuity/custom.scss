@@ -320,7 +320,8 @@ section.footnotes {
     margin: 0 0 .35rem;
   }
 
-  ul { margin-bottom: 0; }
+  ul { margin-bottom: 0; padding-left: 0; list-style: none; }
+  li ul { padding-left: 1.2em; }
 
   .quarto-alternate-formats { margin-top: 1.25rem; }
 }
