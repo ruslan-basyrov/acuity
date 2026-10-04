@@ -18,8 +18,8 @@ const RELIEF_ALPHA = 0.42;
 // Set a name in caps, spaced out, for the effect like: "W O R D" on the map
 const spaced = (s) => [...s.toUpperCase()].join(" ");
 
-const spec = async ({document, width = 700}) => {
-  const c = yaml.load(await loadText("_extensions/acuity/_brand.yml")).color;
+export default async ({Plot, d3, document, width, brand, json, relief}) => {
+  const c = brand.color;
   // Resolve a brand role that names a palette entry instead of giving a hex
   const col = (v) => c.palette[v] ?? v;
   const INK = {

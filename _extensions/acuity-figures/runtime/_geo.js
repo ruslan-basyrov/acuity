@@ -1,4 +1,4 @@
-// Cartography helpers, passed by the runner into figures that use them.
+// Cartography helpers, passed to every figure by prerender.ts.
 // Build-time only, so this never ships to the browser.
 
 import * as d3 from "npm:d3";
