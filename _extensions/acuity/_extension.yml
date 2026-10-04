@@ -1,6 +1,6 @@
 title: Acuity
 author: Ruslan Basyrov
-version: 0.1.14
+version: 0.1.15
 quarto-required: ">=1.8.0"
 contributes:
   # This doesn't with `website` project,
@@ -21,15 +21,19 @@ contributes:
         collapsible: true
 
   formats:
-    html:
+    common:
       filters:
         - at: pre-ast
-          path: wideblock.lua
+          path: layout.lua
         - captions.lua
         - citations.lua
-        - sideblock.lua
-        - draft.lua
-        - tables.lua
+      cite-method: citeproc
+      # The citation styles citations.lua uses, without and with
+      # `sidenote-citations: false`. A document's own `csl:` overrides both.
+      acuity-csl: ieee.csl
+      acuity-plain-csl: author-date.csl
+
+    html:
       grid:
         sidebar-width: 0px
         body-width: 700px
@@ -51,11 +55,6 @@ contributes:
       # `^[...]` becomes a margin note, matching the `#show footnote` rule on the
       # Typst side.
       reference-location: margin
-      cite-method: citeproc
-      # The citation styles citations.lua uses, without and with
-      # `sidenote-citations: false`. A document's own `csl:` overrides both.
-      acuity-csl: ieee.csl
-      acuity-plain-csl: author-date.csl
       syntax-highlighting: github
       respect-user-color-scheme: true
       theme:
@@ -63,22 +62,11 @@ contributes:
         dark: [brand, custom.scss]
 
     typst:
-      filters:
-        - at: pre-ast
-          path: wideblock.lua
-        - captions.lua
-        - citations.lua
-        - sideblock.lua
-        - draft.lua
-        - tables.lua
       template-partials:
         - typst-template.typ
         - typst-show.typ
-      cite-method: citeproc
       syntax-highlighting: idiomatic
       theme:
         - brand
-      acuity-csl: ieee.csl
-      acuity-plain-csl: author-date.csl
       # citation-location is intentionally NOT set: citations.lua generates
       # margin notes itself.

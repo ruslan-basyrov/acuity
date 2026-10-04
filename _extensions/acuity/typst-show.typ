@@ -53,7 +53,7 @@
 
 #let draftspan(body) = highlight(fill: brand-color-background.sand, extent: 1pt, body)
 
-// Tables. tables.lua drops the column widths pandoc reads out of the
+// Tables. layout.lua drops the column widths pandoc reads out of the
 // markdown source, so columns size to their content. Rules sit at 60% ink,
 // below the text, the way a plot's frame sits below its marks.
 #let tablerule = 0.7pt + brand-color.foreground.transparentize(40%)

@@ -3,7 +3,7 @@
 --
 -- The document-level setting cannot be used: Quarto lets it override the
 -- caption location of a single float, and a wideblock or a figure already in
--- the margin has to keep its caption underneath. wideblock.lua sets a caption
+-- the margin has to keep its caption underneath. layout.lua sets a caption
 -- location on those, so a float without one is a body float.
 local typst = quarto.doc.is_format("typst")
 
