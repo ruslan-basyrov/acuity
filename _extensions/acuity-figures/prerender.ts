@@ -1,9 +1,6 @@
-// Prerender every figures/<name>.fig.js for both formats. A figure exposes
-// spec({document, width}) -> Observable Plot options, and may set staticFigure.
-//
-//   HTML         -> an {ojs} cell, interactive in the browser (Plot, d3 ambient)
-//   Typst        -> the figure runs here, in Deno, drawn into JSDOM
-//   staticFigure -> render the SVG once: inlined in HTML, the file in Typst
+// Prerender every figures/<name>.fig.js to one SVG. A figure exposes
+// spec({document, width}) -> Observable Plot options. HTML inlines the SVG with
+// the theme() colours as CSS variables, so they follow the page theme.
 //
 // Runs on Quarto's bundled Deno, so Quarto is the only dependency.
 
@@ -16,59 +13,24 @@ import { json, relief } from "./runtime/_geo.js";
 const projectDir = Deno.env.get("QUARTO_PROJECT_DIR") ?? Deno.cwd();
 const figuresDir = `${projectDir}/figures`;
 const outDir = `${projectDir}/build/figures`;
-const svgRef = (name: string) => `![](build/figures/svgs/${name}.svg){width=100%}\n`;
 const figkit = await Deno.readTextFile(new URL("./runtime/figkit.js", import.meta.url));
 
-// Inline every file a figure loadText()s: a browser can't fetch _brand.yml,
-// because Quarto doesn't publish _extensions/
-const inlineLoadText = async (src: string) => {
-  const paths = [...src.matchAll(/loadText\(\s*["'`]([^"'`]+)["'`]\s*\)/g)].map((m) => m[1]);
-  const files = Object.fromEntries(await Promise.all(
-    paths.map(async (p) => [p, await Deno.readTextFile(`${projectDir}/${p}`)]),
-  ));
-  return `const __files = ${JSON.stringify(files)};\n` +
-    `const loadText = async (p) => __files[p];\n`;
+const brand: any = yaml.load(await Deno.readTextFile(`${projectDir}/_extensions/acuity/_brand.yml`));
+const p = brand.color.palette;
+// role -> [CSS variable, light colour]
+const ROLES: Record<string, [string, string]> = {
+  accent: ["--fig-accent", brand.color.primary.light],
+  slot1: ["--fig-slot1", p.blue],
+  slot2: ["--fig-slot2", p.purple],
+  slot3: ["--fig-slot3", p.olive],
+  paper: ["--bs-body-bg", p.white],
 };
 
-// Build the interactive HTML cell. Plot and d3 are ambient in OJS; yaml comes
-// from a CDN only when the source mentions it. Plot parses the opacity ramp's
-// colour with d3, which cannot read the var(--fig-accent, …) form figures use
-// in the browser, so resolve it against the live theme before plotting — the
-// prerendered SVG bakes in the same accent, so the two formats agree.
-//
-// A legend makes Plot return a <figure> of two svgs, which misbehaves in the
-// browser: the svgs paint their own white background (Quarto strips it only
-// from bare svg outputs), and the fixed-width legend does not scale with the
-// plot. Restack them into one svg, as the Typst path does, so the figure is
-// one transparent block again
-const htmlCell = async (src: string) => `{
-${src.includes("yaml") ? `const yaml = await import("https://cdn.jsdelivr.net/npm/js-yaml@4/+esm");` : ""}
-${await inlineLoadText(src)}${src}
-const options = await spec({});
-if (/^var\\(/.test(options.opacity?.color ?? "")) {
-  const probe = document.body.appendChild(document.createElement("span"));
-  probe.style.color = options.opacity.color;
-  options.opacity = { ...options.opacity, color: getComputedStyle(probe).color };
-  probe.remove();
-}
-const out = Plot.plot(options);
-if (out.tagName !== "FIGURE" || [...out.children].some((c) => c.tagName !== "svg")) return out;
-const root = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-let y = 0, w = 0;
-for (const part of [...out.children]) {
-  part.style.background = "none";
-  part.setAttribute("overflow", "visible");
-  part.setAttribute("y", y);
-  y += Number(part.getAttribute("height"));
-  w = Math.max(w, Number(part.getAttribute("width")));
-  root.append(part);
-}
-root.setAttribute("width", w + ${2 * PAD});
-root.setAttribute("height", y);
-root.setAttribute("viewBox", ${-PAD} + " 0 " + (w + ${2 * PAD}) + " " + y);
-root.style.cssText = "display:block;max-width:100%;height:auto";
-return root;
-}`;
+const themed = (svg: string, roles: Set<string>) =>
+  [...roles].reduce((s, role) => {
+    const [name, hex] = ROLES[role];
+    return s.replace(new RegExp(`"${hex}"`, "gi"), `"var(${name}, ${hex})"`);
+  }, svg);
 
 const NS = "http://www.w3.org/2000/svg";
 const STOPS = 16;
@@ -118,7 +80,7 @@ const swapRamps = (figure: any, ramps: string[][], name: string) => {
       const [r, g, b, a = 1] = (colour.match(/[\d.]+/g) ?? []).map(Number);
       const stop = doc.createElementNS(NS, "stop");
       stop.setAttribute("offset", `${(k * 100) / (STOPS - 1)}%`);
-      stop.setAttribute("stop-color", `rgb(${r},${g},${b})`);
+      stop.setAttribute("stop-color", d3.rgb(r, g, b).formatHex());
       stop.setAttribute("stop-opacity", `${a}`);
       gradient.append(stop);
     }
@@ -161,16 +123,18 @@ const composeFigure = (figure: any, name: string) => {
   return root;
 };
 
-// Run the figure in this process and save its SVG. The figure has no imports:
-// its free names are passed in, and the async wrapper allows top-level await
-const writeSvg = async (name: string, src: string) => {
+// Run the figure in this process. The figure has no imports: its free names
+// are passed in, and the async wrapper allows top-level await
+const render = async (name: string, src: string) => {
   const document = new JSDOM("").window.document;
   const ramps = shimCanvas(document);
+  const used = new Set<string>();
+  const theme = (role: string) => (used.add(role), ROLES[role][1]);
   const loadText = (p: string) => Deno.readTextFile(`${projectDir}/${p}`);
   const spec = await new Function(
-    "Plot", "d3", "yaml", "loadText", "json", "relief",
+    "Plot", "d3", "yaml", "loadText", "json", "relief", "theme",
     `return (async () => { ${src}\n; return spec; })()`,
-  )(Plot, d3, yaml, loadText, json, relief);
+  )(Plot, d3, yaml, loadText, json, relief, theme);
 
   let svg = Plot.plot(await spec({ document, width: 700 }));
   if (svg.tagName === "FIGURE") {
@@ -182,33 +146,20 @@ const writeSvg = async (name: string, src: string) => {
     `${outDir}/svgs/${name}.svg`,
     '<?xml version="1.0" encoding="utf-8"?>\n' + svg.outerHTML,
   );
-  // the inline copy scales with its container, as the file does through the
-  // include's width=100%; background:none shields it from the white
-  // background the browser-side Plot paints on every .plot-* figure
+  // background:none shields it from the white background Plot's CSS paints
   svg.setAttribute("style", "display:block;width:100%;height:auto;background:none");
-  return svg.outerHTML;
+  return themed(svg.outerHTML, used);
 };
 
-// Build the include Quarto stitches in: an OJS cell in HTML, the SVG in Typst.
-// A static figure inlines its baked SVG in HTML, so page css can theme it
-const include = async (name: string, src: string, svg: string) =>
-  src.includes("staticFigure") ? `::: {.content-visible when-format="html"}
+const include = (name: string, html: string) => `::: {.content-visible when-format="html"}
 \`\`\`{=html}
-${svg}
+${html}
 \`\`\`
 :::
 
 ::: {.content-visible when-format="typst"}
-${svgRef(name)}:::
-` : `::: {.content-visible when-format="html"}
-\`\`\`{ojs}
-//| echo: false
-${await htmlCell(src)}
-\`\`\`
+![](build/figures/svgs/${name}.svg){width=100%}
 :::
-
-::: {.content-visible when-format="typst"}
-${svgRef(name)}:::
 `;
 
 // ── build ──────────────────────────────────────────────────────────────
@@ -220,6 +171,5 @@ for await (const entry of Deno.readDir(figuresDir)) {
   if (!entry.name.endsWith(".fig.js")) continue;
   const name = entry.name.slice(0, -".fig.js".length);
   const src = figkit + "\n" + await Deno.readTextFile(`${figuresDir}/${entry.name}`);
-  const svg = await writeSvg(name, src);
-  await Deno.writeTextFile(`${outDir}/${name}.qmd`, await include(name, src, svg));
+  await Deno.writeTextFile(`${outDir}/${name}.qmd`, include(name, await render(name, src)));
 }

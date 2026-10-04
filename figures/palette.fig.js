@@ -13,7 +13,7 @@ const spec = ({document}) => ({
   axis: null,
   margin: 5,
   aspectRatio: 1,
-  ...(document && {document}),
+  document,
   marks: [
     Plot.cell(palette, {x: "x", y: "y", fill: "hex", stroke: "white", strokeWidth: 2}),
     Plot.text(palette, {

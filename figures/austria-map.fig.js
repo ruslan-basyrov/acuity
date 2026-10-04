@@ -1,6 +1,5 @@
 // A map of Austria as a reference basemap. 
 
-const staticFigure = true;
 const SUBJECT_ISO = "AUT";
 
 const NE = "https://cdn.jsdelivr.net/gh/nvkelso/natural-earth-vector@master/geojson";
@@ -85,7 +84,7 @@ const spec = async ({document, width = 700}) => {
     width,
     height,
     margin: 0,
-    ...(document && {document}),
+    document,
     marks: [
       Plot.frame({fill: INK.water, fillOpacity: 0.35}),
       Plot.geo(countries, {fill: INK.land, stroke: INK.border, strokeWidth: 0.7}),
