@@ -4,8 +4,8 @@
 -- Captions and margin notes sit between body text and apparatus, so there are
 -- two totals: body alone, and body plus those.
 
-local MIN, MAX = 20000, 30000
-local REPORT = "build/wordcount.txt"
+-- The range and the report file, set by `make word_count`.
+local MIN, MAX, REPORT
 local NAME = 40 -- width of the section column
 
 -- Divs that are not body text.
@@ -123,9 +123,8 @@ end
 
 local meta
 
-local function setting(key, fallback)
-  local value = meta["wordcount-" .. key]
-  if not value then return fallback end
+local function setting(key)
+  local value = assert(meta["wordcount-" .. key], "wordcount-" .. key .. " is not set")
   return pandoc.utils.stringify(value)
 end
 
@@ -134,9 +133,9 @@ return {
   -- paragraph. Read the settings, then put it aside until the counting is done.
   { Pandoc = function(doc)
       meta, doc.meta = doc.meta, pandoc.Meta({})
-      MIN = tonumber(setting("min")) or MIN
-      MAX = tonumber(setting("max")) or MAX
-      REPORT = setting("report", REPORT)
+      MIN = tonumber(setting("min"))
+      MAX = tonumber(setting("max"))
+      REPORT = setting("report")
       return doc
     end },
 

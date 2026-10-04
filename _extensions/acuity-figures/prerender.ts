@@ -1,5 +1,5 @@
 // Prerender every figures/<name>.fig.js to one SVG. A figure's default export
-// takes { Plot, d3, helpers, document, width, brand, theme } and returns
+// takes { Plot, d3, json, relief, document, width, brand, theme } and returns
 // Observable Plot options. HTML inlines the SVG with the theme() colours as CSS
 // variables, so they follow the page theme.
 //
@@ -9,7 +9,6 @@ import * as Plot from "npm:@observablehq/plot";
 import * as d3 from "npm:d3";
 import * as yaml from "npm:js-yaml@4";
 import { JSDOM } from "npm:jsdom@29";
-import * as figkit from "./runtime/figkit.js";
 import * as geo from "./runtime/_geo.js";
 
 const projectDir = Deno.env.get("QUARTO_PROJECT_DIR") ?? Deno.cwd();
@@ -130,7 +129,7 @@ const render = async (name: string, figure: (context: any) => any) => {
   const ramps = shimCanvas(document);
   const used = new Set<string>();
   const theme = (role: string) => (used.add(role), ROLES[role][1]);
-  const context = { Plot, d3, ...figkit, ...geo, document, width: 700, brand, theme };
+  const context = { Plot, d3, ...geo, document, width: 700, brand, theme };
 
   let svg = Plot.plot(await figure(context));
   if (svg.tagName === "FIGURE") {

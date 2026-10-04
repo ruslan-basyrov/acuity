@@ -46,21 +46,12 @@
   if title != none {
     align(left)[
       #set par(leading: heading-line-height)
-      #if (heading-family != none or heading-weight != "bold" or heading-style != "normal"
-           or heading-color != black or heading-decoration == "underline"
-           or heading-background-color != none) {
-        set text(font: heading-family, weight: heading-weight, style: heading-style, fill: heading-color)
-        text(size: title-size)[#title]
-        if subtitle != none {
-          parbreak()
-          text(size: subtitle-size)[#subtitle]
-        }
-      } else {
-        text(weight: "bold", size: title-size)[#title]
-        if subtitle != none {
-          parbreak()
-          text(weight: "bold", size: subtitle-size)[#subtitle]
-        }
+      #set text(weight: heading-weight, style: heading-style, fill: heading-color)
+      #set text(font: heading-family) if heading-family != none
+      #text(size: title-size)[#title]
+      #if subtitle != none {
+        parbreak()
+        text(size: subtitle-size)[#subtitle]
       }
     ]
   }
