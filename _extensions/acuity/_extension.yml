@@ -1,6 +1,6 @@
 title: Acuity
 author: Ruslan Basyrov
-version: 0.1.13
+version: 0.1.14
 quarto-required: ">=1.8.0"
 contributes:
   # This doesn't with `website` project,
@@ -38,8 +38,6 @@ contributes:
       include-after-body:
         # Restore the number link for side notes.
         - sidenote.html
-        # Link a reference back to the first mention of it.
-        - citeback.html
         - margin.html
         - peektoc.html
       # code-block-border-left: true
@@ -54,8 +52,9 @@ contributes:
       # Typst side.
       reference-location: margin
       cite-method: citeproc
-      csl: ieee.csl
-      # The citation style for `sidenote-citations: false`
+      # The citation styles citations.lua uses, without and with
+      # `sidenote-citations: false`. A document's own `csl:` overrides both.
+      acuity-csl: ieee.csl
       acuity-plain-csl: author-date.csl
       syntax-highlighting: github
       respect-user-color-scheme: true
@@ -79,13 +78,7 @@ contributes:
       syntax-highlighting: idiomatic
       theme:
         - brand
-      # Quarto's own `csl:` breaks the Typst writer
-      # (https://github.com/quarto-dev/quarto-cli/issues/11552), so the style is
-      # named here and citations.lua hands it to the template. Drop this key and
-      # Typst falls back to its own default style.
-      typst-csl: ieee.csl
-      # As above: the style for `sidenote-citations: false`.
+      acuity-csl: ieee.csl
       acuity-plain-csl: author-date.csl
       # citation-location is intentionally NOT set: citations.lua generates
-      # margin notes itself; letting Quarto do it too creates nested #note()
-      # inside #footnote[] which breaks Typst's citation introspection.
+      # margin notes itself.

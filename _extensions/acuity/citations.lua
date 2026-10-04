@@ -1,13 +1,19 @@
-local bib, seen = {}, {}
+-- Citeproc renders every citation and the bibliography here, for both formats.
+-- On top of that, the first citation of a work adds a short reference to the
+-- margin, unless `sidenote-citations: false`, which prints citations in full
+-- with an author-date style instead.
+
+local bib, seen, marked = {}, {}, {}
 
 local typst = quarto.doc.is_format("typst")
 
--- `sidenote-citations: false` keeps references out of the margin. 
--- A citation is printed in full by an author-date style.
 local margin = true
 
-local function read_options(meta)
-  margin = meta["sidenote-citations"] ~= false
+local function typst_wrap(open, inlines, close)
+  local out = pandoc.Inlines({ pandoc.RawInline("typst", open) })
+  out:extend(inlines)
+  out:insert(pandoc.RawInline("typst", close))
+  return out
 end
 
 -- A zero-width anchor on the first citation of a work
@@ -18,9 +24,6 @@ local function mention_anchor(id)
   return pandoc.Span({}, pandoc.Attr("cite-" .. id))
 end
 
--- Works whose first mention is already anchored
-local marked = {}
-
 local function anchor(el)
   local out = pandoc.List()
   for _, c in ipairs(el.citations) do
@@ -30,49 +33,6 @@ local function anchor(el)
     end
   end
   out:insert(el)
-  return out
-end
-
-local function markup(inlines)
-  return pandoc.write(pandoc.Pandoc({ pandoc.Plain(inlines) }), "typst"):gsub("%s+$", "")
-end
-
-local function label_of(id)
-  return ('label("%s")'):format(id:gsub('[\\"]', "\\%0"))
-end
-
-local function key_of(c)
-  return label_of(c.id)
-end
-
--- `nocite` asks for an entry in the bibliography without citing it in the text.
--- Typst lists only what it sees cited, so each key needs a citation that prints
--- nothing.
-local function silent_cites(meta)
-  local out = pandoc.List()
-  if meta.nocite then
-    meta.nocite:walk({
-      Cite = function(c)
-        for _, cit in ipairs(c.citations) do
-          out:insert(("#cite(%s, form: none)"):format(label_of(cit.id)))
-        end
-      end,
-    })
-  end
-  if #out == 0 then return nil end
-  return pandoc.RawBlock("typst", table.concat(out))
-end
-
-local function render(c)
-  local locator = markup(c.suffix):gsub("^[,%s]*", "")
-  local out = pandoc.List(c.prefix)
-  if #out > 0 then out:insert(pandoc.Space()) end
-  local marker = ("#cite(%s%s%s)"):format(key_of(c),
-    c.mode == "AuthorInText" and ', form: "prose"' or "",
-    locator == "" and "" or (", supplement: [%s]"):format(locator))
-  -- Raise the marker above the line unless the sentence already names the author.
-  if c.mode ~= "AuthorInText" then marker = ("#super[%s]"):format(marker) end
-  out:insert(pandoc.RawInline("typst", marker))
   return out
 end
 
@@ -93,53 +53,67 @@ local function date_of(r)
   if visited then return "accessed", visited end
 end
 
-local function dated(c)
-  local kind, y = date_of(bib[c.id])
-  if not kind then return "" end
-  -- Let the style format the publication year, since it owns how one looks.
-  if kind == "issued" then return (', #cite(%s, form: "year")'):format(key_of(c)) end
-  return (", accessed %s"):format(y)
-end
-
 -- Data is provenance rather than an argument, so it is cited in the text and in
 -- the bibliography but kept out of the margin, which belongs to the work the
 -- text engages with.
 local NO_MARGIN = { dataset = true }
 
-local function wants_margin(id)
-  return not NO_MARGIN[bib[id].type]
-end
-
--- Builds "[1] Author, 'Title', 2019." for the margin, or the full entry if there is no title.
-local function short_ref(c)
-  local key = key_of(c)
-  local title = bib[c.id].title
-  if not title then return ('#cite(%s, form: "full")'):format(key) end
-  -- The number is raised to match the marker in the text and spaced like a footnote marker.
-  return ([[#super[#cite(%s)]#h(0.25em)#cite(%s, form: "author"), '%s'%s.]])
-    :format(key, key, markup(title), dated(c))
-end
-
--- Renders a citation, or returns nil if any key is missing from the bibliography.
-local function expand(el)
-  -- Plain citations are citeproc's to render; all this pass leaves is the anchor.
-  if not margin then return anchor(el) end
-  for _, c in ipairs(el.citations) do
-    if not bib[c.id] then return nil end
+-- "Daniela R." -> "D. R.", the way the bibliography style writes given names.
+local function initials(given)
+  local out = {}
+  for word in pandoc.utils.stringify(given):gmatch("%S+") do
+    out[#out + 1] = word:sub(1, 1) .. "."
   end
-  local out, notes = pandoc.List(), pandoc.List()
-  for _, c in ipairs(el.citations) do
-    out:extend(render(c))
-    if not seen[c.id] and wants_margin(c.id) then
-      seen[c.id] = true
-      -- Marked for a later pass, which either turns it into a note or leaves it
-      -- in the block it came from, depending on where the citation is.
-      notes:insert(pandoc.Span({ pandoc.RawInline("typst", short_ref(c)) },
-        pandoc.Attr("", { "column-margin" })))
+  return table.concat(out, " ")
+end
+
+local function authors_of(r)
+  local names = {}
+  for _, a in ipairs(r.author or {}) do
+    if a.literal then
+      names[#names + 1] = pandoc.utils.stringify(a.literal)
+    else
+      local given = a.given and initials(a.given) or ""
+      names[#names + 1] = (given == "" and "" or given .. " ") .. pandoc.utils.stringify(a.family)
     end
   end
-  -- Notes go after all the citations, because one in between stops Typst joining "[1], [2]".
-  out:extend(notes)
+  if #names == 0 then return nil end
+  if #names == 1 then return names[1] end
+  if #names == 2 then return names[1] .. " and " .. names[2] end
+  return table.concat(names, ", ", 1, #names - 1) .. ", and " .. names[#names]
+end
+
+-- "[1] Author, 'Title', 2019." for the margin, or nothing if there is no title.
+local function margin_ref(c)
+  local r = bib[c.id]
+  if not r.title then return nil end
+  -- An empty Cite of the same key takes the number citeproc assigns.
+  local out = pandoc.List({
+    pandoc.Cite({}, { pandoc.Citation(c.id, "NormalCitation") }),
+    pandoc.Space(),
+  })
+  local who = authors_of(r)
+  if who then out:extend({ pandoc.Str(who .. ","), pandoc.Space() }) end
+  local title = pandoc.List(r.title)
+  local url = r.url or r.URL
+  if url then title = pandoc.List({ pandoc.Link(title, pandoc.utils.stringify(url)) }) end
+  out:insert(pandoc.Str("\u{2018}"))
+  out:extend(title)
+  out:insert(pandoc.Str("\u{2019}"))
+  local kind, y = date_of(r)
+  out:insert(pandoc.Str(kind and (", %s%s."):format(kind == "accessed" and "accessed " or "", y) or "."))
+  return pandoc.Span(out, pandoc.Attr("", { "column-margin" }))
+end
+
+local function expand(el)
+  local out = anchor(el)
+  if not margin then return out end
+  for _, c in ipairs(el.citations) do
+    if bib[c.id] and not seen[c.id] and not NO_MARGIN[bib[c.id].type] then
+      seen[c.id] = true
+      out:insert(margin_ref(c))
+    end
+  end
   return out
 end
 
@@ -174,66 +148,22 @@ local function spaced(inlines)
   return inlines
 end
 
--- "Daniela R." -> "D. R.", the way the bibliography style writes given names.
-local function initials(given)
-  local out = {}
-  for word in pandoc.utils.stringify(given):gmatch("%S+") do
-    out[#out + 1] = word:sub(1, 1) .. "."
-  end
-  return table.concat(out, " ")
-end
-
-local function authors_of(r)
-  local names = {}
-  for _, a in ipairs(r.author or {}) do
-    if a.literal then
-      names[#names + 1] = pandoc.utils.stringify(a.literal)
-    else
-      local given = a.given and initials(a.given) or ""
-      names[#names + 1] = (given == "" and "" or given .. " ") .. pandoc.utils.stringify(a.family)
-    end
-  end
-  if #names == 0 then return nil end
-  if #names == 1 then return names[1] end
-  if #names == 2 then return names[1] .. " and " .. names[2] end
-  return table.concat(names, ", ", 1, #names - 1) .. ", and " .. names[#names]
-end
-
--- The same short reference the Typst side builds, as inlines for the margin.
-local function margin_ref(c)
-  local r = bib[c.id]
-  if not r.title then return nil end
-  -- An empty Cite of the same key reuses the number citeproc assigned, instead
-  -- of a second count kept here that could drift from it.
-  local out = pandoc.List({
-    pandoc.Cite({}, { pandoc.Citation(c.id, "NormalCitation") }),
-    pandoc.Space(),
-  })
-  local who = authors_of(r)
-  if who then out:extend({ pandoc.Str(who .. ","), pandoc.Space() }) end
-  local title = pandoc.List(r.title)
-  local url = r.url or r.URL
-  if url then title = pandoc.List({ pandoc.Link(title, pandoc.utils.stringify(url)) }) end
-  out:insert(pandoc.Str("\u{2018}"))
-  out:extend(title)
-  out:insert(pandoc.Str("\u{2019}"))
-  local kind, y = date_of(r)
-  out:insert(pandoc.Str(kind and (", %s%s."):format(kind == "accessed" and "accessed " or "", y) or "."))
-  return pandoc.Span(out, pandoc.Attr("", { "column-margin" }))
-end
-
--- HTML keeps citeproc's citation and adds a margin reference after the first one.
-local function expand_html(el)
-  local out = anchor(el)
-  if not margin then return out end
-  for _, c in ipairs(el.citations) do
-    if bib[c.id] and not seen[c.id] and wants_margin(c.id) then
-      seen[c.id] = true
-      out:insert(margin_ref(c))
-    end
-  end
-  return out
-end
+-- `^[@key]` means "cite this", so render it as a citation and not as a note.
+-- Any other note keeps its citations, anchored so that an entry can point back
+-- at them.
+local CITES = {
+  traverse = "topdown",
+  Note = function(n)
+    local cite = lone_cite(n)
+    if cite then return spaced(expand(cite)), false end
+    return n:walk({ Cite = anchor }), false
+  end,
+  Header = function(h) return h, false end,
+  Span = function(s)
+    if s.classes:includes("no-footnote") then return s, false end
+  end,
+  Cite = function(el) return expand(el), false end,
+}
 
 -- Pulls the marked references out of an element, leaving the markers in place.
 local function take_refs(el)
@@ -252,24 +182,18 @@ end
 -- A reference cited from the margin stays in the block that cited it, because a
 -- note inside a note has nowhere to go.
 local function ref_inline(span)
-  if typst then
-    return pandoc.RawInline("typst", "#parbreak()" .. span.content[1].text)
-  end
-  return pandoc.Span(span.content, pandoc.Attr("", { "inline-ref" }))
+  local content = span.content
+  if typst then content = typst_wrap("#parbreak()", content, "") end
+  return pandoc.Span(content, pandoc.Attr("", { "inline-ref" }))
 end
 
 local function ref_para(span)
-  if typst then return pandoc.Para(span.content) end
   return pandoc.Para(pandoc.Span(span.content, pandoc.Attr("", { "inline-ref" })))
 end
 
 -- Everywhere else the reference becomes a margin note of its own.
 local function ref_note(span)
-  if typst then
-    return pandoc.RawInline("typst",
-      ('#sidenote(numbering: none)[%s]'):format(span.content[1].text))
-  end
-  return span
+  return pandoc.Span(typst_wrap("#sidenote(numbering: none)[", span.content, "]"))
 end
 
 -- A margin block keeps the references for the citations it makes.
@@ -321,6 +245,36 @@ local function float_refs(float, float_node)
   })
 end
 
+-- Only citeproc's rendering of a citation is kept: the Typst writer would cite
+-- a Cite itself, and Quarto's citeproc would render it a second time. In the
+-- margin style the number is a marker, so it is raised.
+local function marker(c)
+  if typst then
+    if not margin then return c.content end
+    return typst_wrap("#super[", c.content, "]")
+  end
+  -- What Quarto's reference popup looks for.
+  local content = c.content:walk({
+    Link = function(l)
+      if l.target:match("^#ref%-") then l.attributes.role = "doc-biblioref" end
+      return l
+    end,
+  })
+  local ids = {}
+  for _, cit in ipairs(c.citations) do ids[#ids + 1] = cit.id end
+  return pandoc.Inlines({ pandoc.Span(content,
+    pandoc.Attr("", margin and { "citation" } or {}, { cites = table.concat(ids, " ") })) })
+end
+
+-- A numeric style prints only the number, so `@key` in a sentence gets the
+-- authors' names in front of it.
+local function rendered(c)
+  local first = c.citations[1]
+  local who = margin and first.mode == "AuthorInText" and authors_of(bib[first.id])
+  if not who then return marker(c) end
+  return pandoc.Inlines(who .. " ") .. marker(c)
+end
+
 -- An entry points back at the first place its work is cited, from its number.
 local function backlinked(div)
   local key = div.identifier:match("^ref%-(.+)$")
@@ -334,7 +288,9 @@ local function backlinked(div)
         space:insert(1, table.remove(number))
       end
       if #number == 0 then return nil end
-      local linked = pandoc.List({ pandoc.Link(number, "#cite-" .. key) }):extend(space)
+      local link = pandoc.Link(number, "#cite-" .. key, "",
+        pandoc.Attr("", { "csl-backlink" }, { role = "doc-backlink" }))
+      local linked = pandoc.List({ link }):extend(space)
       -- HTML sets the number beside the entry by the class it carries, so the
       -- span stays.
       if not typst then return pandoc.Span(linked, s.attr) end
@@ -379,36 +335,39 @@ local function section(title, entries, attr)
   })
 end
 
--- Citeproc numbers the whole bibliography in one series. An entry outside the
--- literature carries the label it has in its own section instead, so that each
--- section counts from one. The number is the entry's first word, whether or not
--- it has been linked back to the text by then.
-local function relabel(entry, label)
+-- Citeproc numbers the whole bibliography in one series. Each section counts
+-- from one instead, in its entries and in the citations of them. Only the
+-- first number of an element is relabelled, and only if it is the entry's
+-- number, so that a year in an author-date citation stays.
+local function relabel(el, from, to)
   local done = false
-  return entry:walk({
+  return el:walk({
     Str = function(str)
-      if done or not str.text:match("^%d+%.?$") then return nil end
+      local n = not done and str.text:match("%d+")
+      if not n then return nil end
       done = true
-      return pandoc.Str((str.text:gsub("^%d+", label)))
+      if n ~= from then return nil end
+      return pandoc.Str((str.text:gsub("%d+", to, 1)))
     end,
   })
 end
 
--- Splits the bibliography, and records the label each entry moved out of it has.
+-- Splits the bibliography, and records the label each entry has in its section.
 local function references(div, label)
-  local literature, listed = pandoc.List(), {}
-  for i = 1, #CATEGORIES do listed[i] = pandoc.List() end
+  local listed = {}
+  for i = 0, #CATEGORIES do listed[i] = pandoc.List() end
   for _, entry in ipairs(div.content) do
     local key = entry.t == "Div" and entry.identifier:match("^ref%-(.+)$")
-    local i = key and category_of(key)
-    if i then
-      label[key] = CATEGORIES[i].mark .. (#listed[i] + 1)
-      listed[i]:insert(relabel(entry, label[key]))
-    else
-      literature:insert(entry)
+    local i = key and category_of(key) or 0
+    if key then
+      local from = pandoc.utils.stringify(entry):match("%d+")
+      local to = (i > 0 and CATEGORIES[i].mark or "") .. (#listed[i] + 1)
+      label[key] = { from = from, to = to }
+      entry = relabel(entry, from, to)
     end
+    listed[i]:insert(entry)
   end
-  local out = section("References", literature, div.attr)
+  local out = section("References", listed[0], div.attr)
   for i, category in ipairs(CATEGORIES) do
     if #listed[i] > 0 then
       -- The same classes as the list it came out of, so it is styled alike.
@@ -419,14 +378,11 @@ local function references(div, label)
   return out
 end
 
--- A marker in the text prints citeproc's number, which the split has changed.
 local function relabel_marks(blocks, label)
   return blocks:walk({
     Link = function(l)
       local key = l.target:match("^#ref%-(.+)$")
-      if not (key and label[key]) then return nil end
-      return pandoc.Link(pandoc.Inlines({ pandoc.Str(label[key]) }),
-        l.target, l.title, l.attr)
+      if key and label[key] then return relabel(l, label[key].from, label[key].to) end
     end,
   })
 end
@@ -435,9 +391,6 @@ end
 -- citation here and citeproc would print it as a missing entry. A key the
 -- bibliography does not know is a crossref, so it is set aside and put back
 -- once the bibliography is built.
--- Only the body is searched: a `nocite` key names a work to list rather than
--- cite, so it is absent from the bibliography read above and would be mistaken
--- for a crossref here.
 local function take_crossrefs(doc)
   local kept = pandoc.List()
   doc.blocks = doc.blocks:walk({
@@ -462,29 +415,20 @@ local function put_crossrefs(doc, kept)
   return doc
 end
 
--- Typst backlinks an entry only from a number it prints itself, so citeproc
--- builds the bibliography here instead. In HTML the list is built here too, so
--- that both formats can split it: no filter runs late enough to see the one
--- Quarto's own citeproc would write.
+-- Built here rather than by Quarto, so that both formats can split the
+-- bibliography and link it back to the text: no filter runs late enough to see
+-- the one Quarto would write.
 local function citeproc_bibliography(doc)
   local crossrefs
   doc, crossrefs = take_crossrefs(doc)
-  doc.meta.csl = doc.meta["acuity-plain-csl"]
+  doc.meta.csl = doc.meta.csl or doc.meta[margin and "acuity-csl" or "acuity-plain-csl"]
   doc.meta["link-citations"] = true
   doc = pandoc.utils.citeproc(doc)
-  -- Left in place, either key would have the template print a second bibliography.
+  -- Left in place, either key would have the bibliography printed a second time.
   doc.meta.csl, doc.meta.bibliography = nil, nil
   local label = {}
   doc = doc:walk({
-    -- The Typst writer cites a Cite element itself and ignores what citeproc
-    -- wrote into it, so only that rendering is kept. In HTML the rendering is
-    -- kept for the opposite reason: left as a citation, Quarto's own citeproc
-    -- pass would render it a second time and, the bibliography now being gone,
-    -- print it as missing.
-    Cite = function(c)
-      if typst then return c.content end
-      return pandoc.Span(c.content, pandoc.Attr("", { "citation" }))
-    end,
+    Cite = rendered,
     Div = function(div)
       if div.identifier == "refs" then return references(div, label) end
       return backlinked(div)
@@ -494,90 +438,15 @@ local function citeproc_bibliography(doc)
   return put_crossrefs(doc, crossrefs)
 end
 
-if not quarto.doc.is_format("typst") then
-  return {
-    {
-      Pandoc = function(doc)
-        for _, r in ipairs(pandoc.utils.references(doc)) do bib[r.id] = r end
-        read_options(doc.meta)
-        if margin then return nil end
-        -- The marker is raised and spaced in CSS, which suits a number, not a name.
-        -- The entry layout is set here too: Quarto styles a bibliography it
-        -- builds itself, and this one is built in the filter.
-        quarto.doc.include_text("in-header", [[<style>
-.citation { vertical-align: baseline; font-size: inherit; line-height: inherit; }
-.column-margin .citation { margin-right: 0; }
-div.csl-entry { clear: both; margin-bottom: 0.4em; }
-div.csl-left-margin { min-width: 3em; float: left; }
-div.csl-right-inline { margin-left: 3em; }
-</style>]])
-        return doc
-      end,
-    },
-    {
-      traverse = "topdown",
-      Note = function(n)
-        local cite = lone_cite(n)
-        if cite then return spaced(expand_html(cite)), false end
-        return n:walk({ Cite = anchor }), false
-      end,
-      Cite = function(el) return expand_html(el), false end,
-    },
-    {
-      Div = block_refs,
-      FloatRefTarget = float_refs,
-    },
-    {
-      -- Late, so that the citations the passes above rewrote are all in place.
-      Pandoc = function(doc)
-        if margin then return nil end
-        return citeproc_bibliography(doc)
-      end,
-    },
-  }
-end
-
 return {
   {
+    -- The body only: a `nocite` key in the metadata is a work to list, not a
+    -- mention to anchor.
     Pandoc = function(doc)
       for _, r in ipairs(pandoc.utils.references(doc)) do bib[r.id] = r end
-      read_options(doc.meta)
-      -- Plain mode builds the bibliography further down instead, where `nocite`
-      -- and the style are citeproc's business again.
-      if not margin then return nil end
-      -- `typst-csl` arrives from _extension.yml already resolved to a path
-      -- relative to the project, which is what Typst wants. Raw, because a plain
-      -- value would have its underscores escaped into an invalid path.
-      local csl = doc.meta["typst-csl"]
-      if csl then
-        doc.meta["acuity-csl"] = pandoc.MetaInlines({
-          pandoc.RawInline("typst", pandoc.utils.stringify(csl)),
-        })
-      end
-      local cites = silent_cites(doc.meta)
-      if cites then doc.blocks:insert(cites) end
+      margin = doc.meta["sidenote-citations"] ~= false
+      doc.blocks = doc.blocks:walk(CITES)
       return doc
-    end,
-  },
-  {
-    traverse = "topdown",
-    -- `^[@key]` means "cite this", so render it as a citation and not as a numbered note.
-    Note = function(n)
-      local cite = lone_cite(n)
-      if cite then
-        local out = expand(cite)
-        if out then return spaced(out), false end
-      end
-      -- As in HTML: the note keeps its citations, anchored so that an entry can
-      -- point back at them.
-      return n:walk({ Cite = anchor }), false
-    end,
-    Header = function(h) return h, false end,
-    Span = function(s)
-      if s.classes:includes("no-footnote") then return s, false end
-    end,
-    Cite = function(el)
-      return expand(el), false
     end,
   },
   {
@@ -585,15 +454,15 @@ return {
     FloatRefTarget = float_refs,
   },
   {
-    -- Whatever is left was cited from body text, so it becomes a note.
-    Span = function(s)
-      if s.classes:includes("column-margin") then return ref_note(s) end
-    end,
-  },
-  {
-    -- Late, so that the citations the passes above rewrote are all in place.
     Pandoc = function(doc)
-      if margin then return nil end
+      -- Whatever is left was cited from body text, so it becomes a note.
+      if typst then
+        doc.blocks = doc.blocks:walk({
+          Span = function(s)
+            if s.classes:includes("column-margin") then return ref_note(s) end
+          end,
+        })
+      end
       return citeproc_bibliography(doc)
     end,
   },
