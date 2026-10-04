@@ -123,6 +123,8 @@ const composeFigure = (figure: any, name: string) => {
   return root;
 };
 
+// Writes <name>.svg for Typst and <name>.html, themed, for HTML; figure.lua
+// places them
 const render = async (name: string, figure: (context: any) => any) => {
   const document = new JSDOM("").window.document;
   const ramps = shimCanvas(document);
@@ -137,33 +139,21 @@ const render = async (name: string, figure: (context: any) => any) => {
   }
   svg.setAttribute("xmlns", NS);
   await Deno.writeTextFile(
-    `${outDir}/svgs/${name}.svg`,
+    `${outDir}/${name}.svg`,
     '<?xml version="1.0" encoding="utf-8"?>\n' + svg.outerHTML,
   );
   // background:none shields it from the white background Plot's CSS paints
   svg.setAttribute("style", "display:block;width:100%;height:auto;background:none");
-  return themed(svg.outerHTML, used);
+  await Deno.writeTextFile(`${outDir}/${name}.html`, themed(svg.outerHTML, used));
 };
-
-const include = (name: string, html: string) => `::: {.content-visible when-format="html"}
-\`\`\`{=html}
-${html}
-\`\`\`
-:::
-
-::: {.content-visible when-format="typst"}
-![](build/figures/svgs/${name}.svg){width=100%}
-:::
-`;
 
 // ── build ──────────────────────────────────────────────────────────────
 // a project may use this format with no figures
 if (!await Deno.stat(figuresDir).catch(() => null)) Deno.exit(0);
-await Deno.mkdir(`${outDir}/svgs`, { recursive: true });
+await Deno.mkdir(outDir, { recursive: true });
 
 for await (const entry of Deno.readDir(figuresDir)) {
   if (!entry.name.endsWith(".fig.js")) continue;
-  const name = entry.name.slice(0, -".fig.js".length);
   const { default: figure } = await import(`${figuresDir}/${entry.name}`);
-  await Deno.writeTextFile(`${outDir}/${name}.qmd`, include(name, await render(name, figure)));
+  await render(entry.name.slice(0, -".fig.js".length), figure);
 }

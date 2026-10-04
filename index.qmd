@@ -17,7 +17,7 @@ Acuity sets body text in Atkinson Hyperlegible Next^[@AtkinsonHyperlegibleFont20
 The map below is an Observable figure: the same code is pre-rendered to work in both HTML and PDF. It covers the whole width of the page. 
 
 ::: {.wideblock #fig-austria}
-{{< include build/figures/austria-map.qmd >}}
+{{< figure austria-map >}}
 
 Relief and six biggest cities of Austria.
 :::
@@ -29,7 +29,7 @@ Relief and six biggest cities of Austria.
 
 ::: {.sideblock}
 ::: {#fig-palette}
-{{< include build/figures/palette.qmd >}}
+{{< figure palette >}}
 
 Palette
 :::
