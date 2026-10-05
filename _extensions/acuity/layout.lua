@@ -1,5 +1,6 @@
--- Places Acuity's blocks. Runs before Quarto turns `{.wideblock #fig-...}`
--- divs into floats, so a div still carries its classes here.
+-- Places Acuity's blocks. A wideblock spans the text and the margin, a
+-- notefigure or a sideblock sits in the margin, and any other float stays in
+-- the text with its caption in the margin, level with the top of the float.
 
 local typst = quarto.doc.is_format("typst")
 
@@ -7,56 +8,48 @@ local typst = quarto.doc.is_format("typst")
 -- document as it would be submitted.
 local marked = true
 
--- The Typst call around each block, and the HTML class it takes. Quarto
--- rebuilds a float and drops its classes, so a wideblock's class moves to a
--- wrapper div instead.
+-- The Typst call around each block. The element stays inside it, so that
+-- citations.lua still sees which block a citation is in.
 local BLOCKS = {
-  { class = "wideblock", typst = { "#wideblock[", "]" }, html = "wideblock", wrap = true },
-  { class = "notefigure", typst = { "#notefigure([", "])" }, html = "column-margin" },
+  wideblock = { "#wideblock[", "]" },
+  notefigure = { "#notefigure([", "])" },
   -- Full width, or a figure in it would not centre in the note.
-  { class = "sideblock", typst = { "#note(numbering: none)[", "]" }, html = "column-margin", full = true },
+  sideblock = { "#note(numbering: none)[#block(width: 100%)[", "]]" },
 }
 
--- Keeps the caption under the figure. A wideblock covers the margin itself,
--- and a margin block is already in it, so neither can send a caption there.
--- captions.lua skips any float that already has a caption location.
-local function pin_caption(el)
-  el.attributes["cap-location"] = "bottom"
-  el.content = el.content:walk({
-    Div = function(d)
-      if d.identifier:match("^fig%-") or d.identifier:match("^tbl%-") then
-        d.attributes["cap-location"] = "bottom"
-      end
-      return d
-    end,
-    -- A labelled markdown table is a Table, not a Div, and this early its
-    -- label still sits in the caption text, so every table is pinned. The
-    -- caption stays where tables put it: on top.
-    Table = function(t)
-      t.attributes["cap-location"] = "top"
-      return t
-    end,
-  })
+local function typst_call(node, call)
+  return pandoc.Blocks({ pandoc.RawBlock("typst", call[1]), node, pandoc.RawBlock("typst", call[2]) })
 end
 
--- The div stays inside the Typst call, so that citations.lua still sees which
--- block a citation is in.
-local function place(el, block)
-  pin_caption(el)
-  if block.wrap then
-    el.classes = el.classes:filter(function(c) return c ~= block.class end)
+-- In HTML a block in the margin takes Quarto's class for it. Quarto drops the
+-- classes of a float it lays out as a panel, so a wideblock's class moves to a
+-- wrapper div.
+local function place(el, node)
+  local class = el.classes:find_if(function(c) return BLOCKS[c] end)
+  if not class then return nil end
+  if typst then return typst_call(node, BLOCKS[class]) end
+  if class == "wideblock" then
+    el.classes = el.classes:filter(function(c) return c ~= class end)
+    return pandoc.Div(node, pandoc.Attr("", { class }))
   end
-  if typst then
-    if block.full then el.attributes["typst:width"] = "100%" end
-    return pandoc.Blocks({
-      pandoc.RawBlock("typst", block.typst[1]),
-      el,
-      pandoc.RawBlock("typst", block.typst[2]),
-    })
-  end
-  if block.wrap then return pandoc.Div(el, pandoc.Attr("", { block.html })) end
-  el.classes:insert(block.html)
+  el.classes:insert("column-margin")
   return el
+end
+
+-- Quarto's own margin captions leave a panel layout with a caption position
+-- Typst cannot read, so in Typst the caption goes on top and the template's
+-- `margincaption` turns it into a note.
+local function margin_caption(float, node)
+  -- A caption the author placed, or one already in the margin, stays.
+  if float.attributes["cap-location"] or float.classes:includes("column-margin") then
+    return nil
+  end
+  if not typst then
+    float.attributes["cap-location"] = "margin"
+    return float
+  end
+  float.attributes["cap-location"] = "top"
+  return typst_call(node, { "#margincaption[", "]" })
 end
 
 -- `::: draft` marks a run of unfinished text, `[...]{.draft}` an unfinished
@@ -75,13 +68,21 @@ return {
   {
     Meta = function(meta) marked = meta["draft-marks"] ~= false end,
   },
+  -- Top down, so that the walk stops at a block in the margin or across it:
+  -- the floats in it keep their captions underneath.
   {
-    Div = function(el)
-      for _, block in ipairs(BLOCKS) do
-        if el.classes:includes(block.class) then return place(el, block) end
-      end
-      return draft(el, "#draftblock[", pandoc.RawBlock)
+    traverse = "topdown",
+    Div = function(div)
+      if div.classes:includes("column-margin") then return nil, false end
+      local placed = place(div, div)
+      if placed then return placed, false end
     end,
+    FloatRefTarget = function(float, node)
+      return place(float, node) or margin_caption(float, node), false
+    end,
+  },
+  {
+    Div = function(el) return draft(el, "#draftblock[", pandoc.RawBlock) end,
     Span = function(el) return draft(el, "#draftspan[", pandoc.RawInline) end,
     -- Pandoc reads the width of the dashes in a markdown table as the width of
     -- the column, which has nothing to do with what the column holds. Dropping

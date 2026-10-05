@@ -25,6 +25,16 @@
   par-style: (spacing: 0.9em, leading: 0.45em, hanging-indent: 0pt),
 )
 
+// A caption that layout.lua moves to the margin. It is set on top, so that the
+// note it becomes starts level with the float, and it keeps the notes' ink
+// rather than the captions' colour.
+#let margincaption(body) = {
+  set figure(gap: 0pt)
+  show figure.caption: it => sidenote(alignment: "top", dy: -0.01pt, counter: none, shift: "avoid", keep-order: true)[#it]
+  show figure.caption: set text(size: 8pt, fill: brand-color.foreground)
+  body
+}
+
 // Quarto anchors a margin figure at the first baseline of its caption, which
 // puts the anchor a whole figure height above the line the figure sits on.
 // Marginalia orders the margin by those anchors, so a figure can overtake a note
@@ -66,7 +76,7 @@
 #show table: it => block(stroke: (top: tablerule, bottom: tablerule), inset: (y: 0.4em), it)
 
 // Captions take the secondary colour. A caption moved to the margin is
-// excepted and keeps the sidenotes' ink (captions.lua).
+// excepted and keeps the sidenotes' ink (`margincaption`).
 #show figure.caption: set text(size: 8.5pt, fill: brand-color.secondary)
 
 // Turn every footnote into a margin note.

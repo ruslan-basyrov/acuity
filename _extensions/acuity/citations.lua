@@ -196,7 +196,8 @@ local function ref_note(span)
   return pandoc.Span(typst_wrap("#sidenote(numbering: none)[", span.content, "]"))
 end
 
--- A margin block keeps the references for the citations it makes.
+-- A margin block keeps the references for the citations it makes, the ones in
+-- the captions of its floats too.
 local function block_refs(div)
   local classes = div.classes
   if not (classes:includes("column-margin") or classes:includes("sideblock")
@@ -204,12 +205,12 @@ local function block_refs(div)
     return nil
   end
   local out, refs = take_refs(div)
-  if #refs == 0 then return nil end
+  if #refs == 0 then return nil, false end
   for _, ref in ipairs(refs) do out.content:insert(ref_para(ref)) end
-  return out
+  return out, false
 end
 
--- captions.lua has already decided where every caption goes. In Typst it marks
+-- layout.lua has already decided where every caption goes. In Typst it marks
 -- a margin caption as a top caption, which the template turns into a note.
 local function in_margin(float)
   local location = float.attributes["cap-location"]
@@ -449,7 +450,10 @@ return {
       return doc
     end,
   },
+  -- Top down, so that a margin block takes the references of its floats
+  -- before float_refs makes them notes inside the note.
   {
+    traverse = "topdown",
     Div = block_refs,
     FloatRefTarget = float_refs,
   },
