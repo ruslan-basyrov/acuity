@@ -1,17 +1,23 @@
-// A map of Austria as a reference basemap. 
+// A map of Austria as a reference basemap.
 
-const SUBJECT_ISO = "AUT";
+const NE = "https://cdn.jsdelivr.net/gh/nvkelso/natural-earth-vector@v5.1.2/geojson";
 
-const NE = "https://cdn.jsdelivr.net/gh/nvkelso/natural-earth-vector@master/geojson";
-
-// Pad the subject's bounds by this fraction of its width and height, so the
+// Pad Austria's bounds by this fraction of its width and height, so the
 // country reads in context and the neighbour labels have room
 const PAD = [0.14, 0.21];
 
 // Show country's name if its area surpasses the threshold.
 const MIN_LABEL_AREA = 0.005;
 
-const CITY_COUNT = 6; // as many as the frame holds without labels colliding
+// The six largest towns, as Natural Earth's populated places rank them
+const CITIES = [
+  {name: "Vienna", lon: 16.36, lat: 48.2},
+  {name: "Linz", lon: 14.29, lat: 48.32},
+  {name: "Graz", lon: 15.41, lat: 47.08},
+  {name: "Salzburg", lon: 13.04, lat: 47.81},
+  {name: "Innsbruck", lon: 11.41, lat: 47.28},
+  {name: "Klagenfurt", lon: 14.31, lat: 46.62}
+];
 
 const RELIEF_ALPHA = 0.42;
 
@@ -19,46 +25,26 @@ const RELIEF_ALPHA = 0.42;
 const spaced = (s) => [...s.toUpperCase()].join(" ");
 
 export default async ({Plot, d3, document, width, brand, json, relief}) => {
-  const c = brand.color;
-  // Resolve a brand role that names a palette entry instead of giving a hex
-  const col = (v) => c.palette[v] ?? v;
+  const {palette, secondary, tertiary, foreground} = brand.color;
   const INK = {
-    water:   c.palette.cyan,
-    land:    col(c.light.light),
-    subject: col(c.background.light),
-    border:  col(c.tertiary.light),
-    outline: col(c.secondary.light),
-    label:   col(c.foreground.light)
+    water:   palette.cyan,
+    land:    palette.white,
+    border:  tertiary.light,
+    outline: secondary.light,
+    label:   foreground.light
   };
 
   const countries = await json(`${NE}/ne_50m_admin_0_countries.geojson`);
-  const subject = countries.features.find((d) => d.properties.ADM0_A3 === SUBJECT_ISO);
+  const austria = countries.features.find((d) => d.properties.ADM0_A3 === "AUT");
 
-  // Calculate the boundary box depending on the country (here, Austria)
-  const [[w, s], [e, n]] = d3.geoBounds(subject);
+  // Fit Austria Lambert, the country's official projection (EPSG:31287), to the
+  // padded box. The relief is warped into the same projection
+  const [[w, s], [e, n]] = d3.geoBounds(austria);
   const [dx, dy] = [(e - w) * PAD[0], (n - s) * PAD[1]];
-  const box = [[w - dx, s - dy], [e + dx, n + dy]];
-  const WINDOW = d3.geoGraticule().extent(box).outline();
-
-  // Calculate the projection: parallels at 1/6 and 5/6 of the window's latitudes
-  const lat = d3.interpolate(s - dy, n + dy);
-  const proj = d3.geoConicEqualArea()
-    .parallels([lat(1 / 6), lat(5 / 6)])
-    .rotate([-(w + e) / 2, 0]);
-
-  // Fit the projection to the window with zero margins, so the frame is exactly
-  // [0,0]-[width,height] and the relief lines up with the vector layers
-  proj.fitWidth(width, WINDOW);
-  const [[, top], [, bottom]] = d3.geoPath(proj).bounds(WINDOW);
-  const height = Math.round(bottom - top);
-  proj.fitExtent([[0, 0], [width, height]], WINDOW);
-
-  const [lakes, rivers, places, terrain] = await Promise.all([
-    json(`${NE}/ne_50m_lakes.geojson`),
-    json(`${NE}/ne_50m_rivers_lake_centerlines.geojson`),
-    json(`${NE}/ne_10m_populated_places_simple.geojson`),
-    relief(proj, width, height)
-  ]);
+  const box = d3.geoGraticule().extent([[w - dx, s - dy], [e + dx, n + dy]]).outline();
+  const proj = d3.geoConicConformal().parallels([46, 49]).rotate([-13 - 1 / 3, 0])
+    .fitWidth(width, box);
+  const height = Math.round(d3.geoPath(proj).bounds(box)[1][1]);
 
   // Clip the projection so that a country's area covers only its visible part,
   // and name the ones with room for a label (Plot.centroid puts it on the
@@ -66,43 +52,37 @@ export default async ({Plot, d3, document, width, brand, json, relief}) => {
   proj.clipExtent([[0, 0], [width, height]]);
   const path = d3.geoPath(proj);
   const NEIGHBOURS = countries.features
-    .filter((d) => d !== subject && path.area(d) > MIN_LABEL_AREA * width * height);
+    .filter((d) => d !== austria && path.area(d) > MIN_LABEL_AREA * width * height);
 
-  // Take the largest towns from the place names file
-  const CITIES = places.features
-    .map((f) => f.properties)
-    .filter((p) => p.adm0_a3 === SUBJECT_ISO)
-    .sort((a, b) => b.pop_max - a.pop_max)
-    .slice(0, CITY_COUNT);
-
-  // Name goes right of its dot (side 1) for towns in the country's east half,
-  // left (-1) for the west
-  const side = (p) => (p.longitude < subject.properties.LABEL_X ? -1 : 1);
+  const [lakes, rivers, terrain] = await Promise.all([
+    json(`${NE}/ne_50m_lakes.geojson`),
+    json(`${NE}/ne_50m_rivers_lake_centerlines.geojson`),
+    relief(proj, width, height)
+  ]);
 
   return {
-    projection: {type: () => proj},
+    projection: proj,
     width,
     height,
     margin: 0,
     document,
     marks: [
-      Plot.frame({fill: INK.water, fillOpacity: 0.35}),
       Plot.geo(countries, {fill: INK.land, stroke: INK.border, strokeWidth: 0.7}),
 
       // Draw the terrain over the fills but under the linework, so it shades
       // the land without muddying borders, rivers or type
-      terrain && Plot.image([{}], {
+      Plot.image([{}], {
         src: terrain,
         width, height,
         frameAnchor: "middle",
         preserveAspectRatio: "none",
         opacity: RELIEF_ALPHA
       }),
-      // Redraw the subject over the relief to keep its edge crisp
-      Plot.geo(subject, {fill: "none", stroke: INK.outline, strokeWidth: 1.1}),
+      // Redraw Austria over the relief to keep its edge crisp
+      Plot.geo(austria, {fill: "none", stroke: INK.outline, strokeWidth: 1.1}),
 
-      // Draw whole layers: Plot clips geometry to the frame, so a river that
-      // leaves the map costs a few characters
+      // Draw whole layers: the projection clips geometry to the frame, so a
+      // river that leaves the map costs a few characters
       Plot.geo(rivers, {stroke: INK.water, strokeWidth: 0.8}),
       Plot.geo(lakes, {
         fill: INK.water, fillOpacity: 0.55, stroke: INK.water, strokeWidth: 0.5
@@ -112,21 +92,20 @@ export default async ({Plot, d3, document, width, brand, json, relief}) => {
         text: (d) => spaced(d.properties.NAME),
         fontSize: 8.5, fill: INK.border, fontWeight: 500
       })),
-      // Put the subject's name on Natural Earth's own label point
-      Plot.text([subject.properties], {
+      // Put Austria's name on Natural Earth's own label point
+      Plot.text([austria.properties], {
         x: "LABEL_X", y: "LABEL_Y", text: (p) => spaced(p.NAME),
         fontSize: 12, fill: INK.label, fontWeight: 500
       }),
 
       Plot.dot(CITIES, {
-        x: "longitude", y: "latitude", r: 2.2,
-        fill: INK.subject, stroke: INK.label, strokeWidth: 1
+        x: "lon", y: "lat", r: 2.2,
+        fill: INK.land, stroke: INK.label, strokeWidth: 1
       }),
-      ...[1, -1].map((s) => Plot.text(CITIES.filter((p) => side(p) === s), {
-        x: "longitude", y: "latitude", text: "name",
-        dx: 6 * s, textAnchor: s > 0 ? "start" : "end",
+      Plot.text(CITIES, {
+        x: "lon", y: "lat", text: "name", dx: 6, textAnchor: "start",
         fontSize: 9.5, fill: INK.label
-      })),
+      }),
 
       Plot.frame({stroke: INK.border, strokeWidth: 0.8})
     ]

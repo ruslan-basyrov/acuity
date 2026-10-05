@@ -1,7 +1,7 @@
 // Prerender every figures/<name>.fig.js to one SVG. A figure's default export
-// takes { Plot, d3, json, relief, document, width, brand, theme } and returns
-// Observable Plot options. HTML inlines the SVG with the theme() colours as CSS
-// variables, so they follow the page theme.
+// takes { Plot, d3, json, warp, relief, document, width, brand, theme } and
+// returns Observable Plot options. HTML inlines the SVG with the theme() colours
+// as CSS variables, so they follow the page theme.
 //
 // Runs on Quarto's bundled Deno, so Quarto is the only dependency.
 

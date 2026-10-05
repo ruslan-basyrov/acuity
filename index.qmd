@@ -19,7 +19,8 @@ The map below is an Observable figure: the same code is pre-rendered to work in 
 ::: {.wideblock #fig-austria}
 {{< figure austria-map >}}
 
-Relief and six biggest cities of Austria.
+Relief and six biggest cities of Austria.\
+*Source:* Natural Earth[@NaturalEarth2022] and SRTM elevation, courtesy of the U.S. Geological Survey, via Terrain Tiles[@TerrainTiles].
 :::
 
 
