@@ -1,7 +1,7 @@
 // A continuous opacity scale with its built-in Plot legend, which the
 // prerender turns into a vector gradient.
 
-export default ({ Plot, d3, document, width, theme }) => {
+export default ({ Plot, d3, width, theme }) => {
   const random = d3.randomLcg(11);
   const cells = d3.cross(d3.range(14), d3.range(7)).map(([x, y]) => ({
     x,
@@ -10,7 +10,6 @@ export default ({ Plot, d3, document, width, theme }) => {
   }));
   const accent = theme("accent");
   return {
-    document,
     width,
     height: 240,
     x: { label: null },

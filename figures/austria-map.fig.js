@@ -24,7 +24,7 @@ const RELIEF_ALPHA = 0.42;
 // Set a name in caps, spaced out, for the effect like: "W O R D" on the map
 const spaced = (s) => [...s.toUpperCase()].join(" ");
 
-export default async ({Plot, d3, document, width, brand, json, relief}) => {
+export default async ({Plot, d3, width, brand, json, relief}) => {
   const {palette, secondary, tertiary, foreground} = brand.color;
   const INK = {
     water:   palette.cyan,
@@ -65,7 +65,6 @@ export default async ({Plot, d3, document, width, brand, json, relief}) => {
     width,
     height,
     margin: 0,
-    document,
     marks: [
       Plot.geo(countries, {fill: INK.land, stroke: INK.border, strokeWidth: 0.7}),
 

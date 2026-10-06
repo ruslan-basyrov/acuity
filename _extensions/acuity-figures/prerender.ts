@@ -1,7 +1,8 @@
 // Prerender every figures/<name>.fig.js to one SVG. A figure's default export
 // takes { Plot, d3, json, warp, relief, document, width, brand, theme } and
-// returns Observable Plot options. HTML inlines the SVG with the theme() colours
-// as CSS variables, so they follow the page theme.
+// returns Observable Plot options, without the `document` Plot draws into.
+// HTML inlines the SVG with the theme() colours as CSS variables, so they
+// follow the page theme.
 //
 // Runs on Quarto's bundled Deno, so Quarto is the only dependency.
 
@@ -131,7 +132,7 @@ const render = async (name: string, figure: (context: any) => any) => {
   const theme = (role: string) => (used.add(role), ROLES[role][1]);
   const context = { Plot, d3, ...geo, document, width: 700, brand, theme };
 
-  let svg = Plot.plot(await figure(context));
+  let svg = Plot.plot({ ...(await figure(context)), document });
   if (svg.tagName === "FIGURE") {
     swapRamps(svg, ramps, name);
     svg = composeFigure(svg, name);

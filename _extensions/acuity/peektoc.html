@@ -7,11 +7,10 @@
     const list = toc && toc.querySelector("ul");
     if (!toc || !header || !list) return;
 
+    const targetOf = (a) => document.getElementById(decodeURIComponent(a.hash.slice(1)));
     const links = [...list.querySelectorAll('a[href^="#"]')];
-    const targets = links.map((a) =>
-      document.getElementById(decodeURIComponent(a.hash.slice(1))),
-    );
     if (!links.length) return;
+    const targets = links.map(targetOf);
 
     const band = document.createElement("div");
     band.className = "peektoc";
@@ -44,7 +43,7 @@
       const link = e.target.closest("a");
       if (!link) return;
       open(false);
-      const target = document.getElementById(decodeURIComponent(link.hash.slice(1)));
+      const target = targetOf(link);
       if (!target) return;
       e.preventDefault();
       window.scrollTo({

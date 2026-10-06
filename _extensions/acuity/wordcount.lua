@@ -17,20 +17,22 @@ local DROP_SECTION = { references = true, bibliography = true, appendix = true }
 -- Divs that count towards the inclusive total only.
 local MARGIN = { sideblock = true, notefigure = true, ["column-margin"] = true, aside = true }
 
+local function silence() return {} end
+
+local function silence_draft(el)
+  if el.classes:includes("draft") then return {} end
+end
+
 -- Not prose, so not words.
 local SILENT = {
-  CodeBlock = function() return {} end,
-  RawBlock = function() return {} end,
-  Code = function() return {} end,
-  RawInline = function() return {} end,
-  Math = function() return {} end,
-  Cite = function() return {} end,
-  Span = function(el)
-    if el.classes:includes("draft") then return {} end
-  end,
-  Div = function(el)
-    if el.classes:includes("draft") then return {} end
-  end,
+  CodeBlock = silence,
+  RawBlock = silence,
+  Code = silence,
+  RawInline = silence,
+  Math = silence,
+  Cite = silence,
+  Span = silence_draft,
+  Div = silence_draft,
 }
 
 local function words(el)

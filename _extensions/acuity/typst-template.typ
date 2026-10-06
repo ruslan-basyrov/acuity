@@ -1,4 +1,4 @@
-#import "@preview/marginalia:0.3.1": wideblock, note
+#import "@preview/marginalia:0.3.1": wideblock
 
 #let book(
   title: none,
@@ -88,11 +88,6 @@
   }
 
   if toc {
-    let title = if toc_title == none {
-      auto
-    } else {
-      toc_title
-    }
     block(above: 0em, below: 2em)[
     #outline(
       title: toc_title,
@@ -105,20 +100,9 @@
   doc
 }
 
-#set table(
-  inset: 6pt,
-  stroke: none
-)
 #show heading.where(level: 1): it => {
   pagebreak(weak: true)
   v(2em, weak: true)
   text(size: 14pt, weight: "bold", it)
   v(1em, weak: true)
 }
-
-// A caption can run to several lines, which centring leaves ragged on both
-// sides. Margin captions are already left-aligned by the sidenote.
-#show figure.caption: set align(left)
-// The margin column is too narrow to justify without wide word gaps and
-// hyphenation, so captions are set ragged right.
-#show figure.caption: set par(justify: false)

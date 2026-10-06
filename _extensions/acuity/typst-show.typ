@@ -78,6 +78,12 @@
 // Captions take the secondary colour. A caption moved to the margin is
 // excepted and keeps the sidenotes' ink (`margincaption`).
 #show figure.caption: set text(size: 8.5pt, fill: brand-color.secondary)
+// A caption can run to several lines, which centring leaves ragged on both
+// sides. Margin captions are already left-aligned by the sidenote.
+#show figure.caption: set align(left)
+// The margin column is too narrow to justify without wide word gaps and
+// hyphenation, so captions are set ragged right.
+#show figure.caption: set par(justify: false)
 
 // Turn every footnote into a margin note.
 #show footnote: it => {

@@ -166,14 +166,17 @@ local function ref_note(ref)
   return pandoc.Span(typst_wrap("#sidenote(numbering: none)[", ref.content, "]"))
 end
 
+-- The classes of a block in the margin.
+local MARGIN = { ["column-margin"] = true, sideblock = true, notefigure = true }
+
+local function in_margin(el)
+  return el.classes:find_if(function(c) return MARGIN[c] end)
+end
+
 -- A margin block keeps the references for the citations it makes, the ones in
 -- the captions of its floats too.
 local function block_refs(div)
-  local classes = div.classes
-  if not (classes:includes("column-margin") or classes:includes("sideblock")
-          or classes:includes("notefigure")) then
-    return nil
-  end
+  if not in_margin(div) then return nil end
   local out, refs = take_refs(div)
   out.content:extend(refs:map(ref_para))
   return out, false
@@ -181,11 +184,9 @@ end
 
 -- layout.lua has already decided where every caption goes. In Typst it marks
 -- a margin caption as a top caption, which the template turns into a note.
-local function in_margin(float)
+local function caption_in_margin(float)
   local location = float.attributes["cap-location"]
-  return location == "margin" or (typst and location == "top")
-    or float.classes:includes("column-margin")
-    or float.classes:includes("notefigure")
+  return location == "margin" or (typst and location == "top") or in_margin(float)
 end
 
 -- A float's references go inside its caption when the caption is in the margin.
@@ -199,7 +200,7 @@ local function float_refs(float, node)
   if #refs == 0 then return nil end
   float.caption_long = caption
   local content = float.caption_long.content
-  if in_margin(float) then
+  if caption_in_margin(float) then
     content:extend(refs:map(ref_inline))
   elseif typst then
     content:extend(refs:map(ref_note))
@@ -301,23 +302,21 @@ end
 -- A section gets the whole width, with the heading outside the wide block
 -- because a level-1 heading breaks the page.
 local function section(title, entries, attr)
-  if not typst then
-    -- Quarto's own class, which places the list on the page grid: a width of
-    -- its own cannot meet the grid lines, and overhangs the margin column.
-    local classes = pandoc.List(attr.classes)
-    classes:insert("column-page-right")
+  -- The id gives the section its link in the contents.
+  local heading = pandoc.Header(1, pandoc.Str(title), pandoc.Attr("sec-" .. attr.identifier))
+  if typst then
     return pandoc.Blocks({
-      -- Make the sections have link in TOC
-      pandoc.Header(1, pandoc.Str(title), pandoc.Attr("sec-" .. attr.identifier)),
-      pandoc.Div(entries, pandoc.Attr(attr.identifier, classes, attr.attributes)),
+      heading,
+      pandoc.RawBlock("typst", "#wideblock[#set par(hanging-indent: 1.5em, spacing: 0.9em)"),
+      pandoc.Div(entries, attr),
+      pandoc.RawBlock("typst", "]"),
     })
   end
-  return pandoc.Blocks({
-    pandoc.RawBlock("typst", ("#heading(level: 1)[%s]\n"):format(title)
-      .. "#wideblock[#set par(hanging-indent: 1.5em, spacing: 0.9em)"),
-    pandoc.Div(entries, attr),
-    pandoc.RawBlock("typst", "]"),
-  })
+  -- Quarto's own class, which places the list on the page grid: a width of
+  -- its own cannot meet the grid lines, and overhangs the margin column.
+  local classes = pandoc.List(attr.classes)
+  classes:insert("column-page-right")
+  return pandoc.Blocks({ heading, pandoc.Div(entries, pandoc.Attr(attr.identifier, classes, attr.attributes)) })
 end
 
 -- Splits the bibliography, and records the label each entry has in its section.

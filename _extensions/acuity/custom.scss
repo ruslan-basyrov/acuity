@@ -15,6 +15,9 @@ $table-hover-bg:        transparent;
 
 $secondary-color: mix($body-color, $light, 30%);
 
+// Text beside the body: margin notes, captions, footnotes and the contents.
+$note-font-size: 13.5px;
+
 // Figure colours. A slot is a hue family with one step per background, so a
 // figure names the role and never the hex. Take slots in order. Wine and green
 // are left out: each is too close to the accent on one of the two backgrounds.
@@ -182,7 +185,7 @@ div.csl-right-inline { margin-left: 3em; }
 
 // ── Margin column ─────────────────────────────────────────────────────
 .column-margin, .margin-caption {
-  font-size: 13.5px;
+  font-size: $note-font-size;
   line-height: 1.5;
 
   p, li { font-size: inherit; color: inherit; }
@@ -260,11 +263,10 @@ thead th {
 }
 
 tbody tr { background: transparent !important; }
-tbody tr:hover { background: transparent !important; }
 
 // ── Figures ──────────────────────────────────────────────────────────
 figcaption, .figure-caption {
-  font-size: 13.5px;
+  font-size: $note-font-size;
   line-height: 1.5;
   margin-top: 8px;
 }
@@ -292,14 +294,14 @@ hr {
 }
 
 section.footnotes {
-  font-size: 13.5px;
+  font-size: $note-font-size;
   margin-top: 3rem;
   padding-top: 1rem;
 }
 
 // ── TOC ──────────────────────────────────────────────────────────────
 #TOC, .sidebar nav[role="doc-toc"] {
-  font-size: 13.5px;
+  font-size: $note-font-size;
 }
 
 // `toc-location: body` renders these outside `.sidebar`, where Quarto's
@@ -368,7 +370,7 @@ section.footnotes {
 }
 
 .peektoc-list {
-  font-size: 13.5px;
+  font-size: $note-font-size;
   padding-block-end: .75rem;
 
   ul { margin: 0; padding: 0; list-style: none; }
