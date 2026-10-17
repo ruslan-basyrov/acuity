@@ -1,6 +1,6 @@
 title: Acuity
 author: Ruslan Basyrov
-version: 0.1.19
+version: 0.2.0
 quarto-required: ">=1.8.0"
 contributes:
   # This doesn't with `website` project,
@@ -11,8 +11,6 @@ contributes:
       type:  website
       output-dir: _acuity
       brand: _brand.yml
-      pre-render:
-        - ../acuity-figures/prerender.ts
     website:
       navbar:
         background: light
@@ -22,14 +20,7 @@ contributes:
 
   formats:
     common:
-      filters:
-        - layout.lua
-        - citations.lua
       cite-method: citeproc
-      # The citation styles citations.lua uses, without and with
-      # `sidenote-citations: false`. A document's own `csl:` overrides both.
-      acuity-csl: ieee.csl
-      acuity-plain-csl: author-date.csl
 
     html:
       grid:
@@ -37,34 +28,22 @@ contributes:
         body-width: 700px
         margin-width: 400px
         # gutter-width: 1.5rem
-      include-after-body:
-        # Restore the number link for side notes.
-        - sidenote.html
-        - margin.html
-        - peektoc.html
       # code-block-border-left: true
       toc: true
       toc-title: "Contents"
       toc-location: body
       page-layout: article
-      # The same region as the Typst side, so both formats quote titles alike.
       lang: en-GB
       reference-links: true
-      # `^[...]` becomes a margin note, matching the `#show footnote` rule on the
-      # Typst side.
+      # `^[...]` becomes a margin note.
       reference-location: margin
       syntax-highlighting: github
       respect-user-color-scheme: true
       theme:
-        light: [brand, custom.scss]
-        dark: [brand, custom.scss]
+        light: [brand]
+        dark: [brand]
 
     typst:
-      template-partials:
-        - typst-template.typ
-        - typst-show.typ
       syntax-highlighting: idiomatic
       theme:
         - brand
-      # citation-location is intentionally NOT set: citations.lua generates
-      # margin notes itself.

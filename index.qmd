@@ -12,29 +12,9 @@ abstract: |
 
 Acuity sets body text in Atkinson Hyperlegible Next^[@AtkinsonHyperlegibleFont2019], a typeface designed by the Braille Institute for maximum legibility. Headings use EB Garamond for typographic contrast, and code is set in JetBrains Mono. All three load from Google Fonts.
 
-# Two features in one example: wide Observable Plot 
-
-The map below is an Observable figure: the same code is pre-rendered to work in both HTML and PDF. It covers the whole width of the page. 
-
-::: {.wideblock #fig-austria}
-{{< figure austria-map >}}
-
-Relief and six biggest cities of Austria.\
-*Source:* Natural Earth[@NaturalEarth2022] and SRTM elevation, courtesy of the U.S. Geological Survey, via Terrain Tiles[@TerrainTiles].
-:::
-
-
 # Color Palette
 
 [Paul Tol's color palette](https://sronpersonalpages.nl/~pault/), designed to remain distinguishable under color-blindness, provides the named swatches.
-
-::: {.sideblock}
-::: {#fig-palette}
-{{< figure palette >}}
-
-Palette
-:::
-:::
 
 Semantic roles — primary, success, warning, danger — are mapped separately in `_brand.yml` and drive callout colors and link accents:
 
