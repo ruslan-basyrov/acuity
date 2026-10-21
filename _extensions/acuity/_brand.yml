@@ -3,10 +3,6 @@ meta:
 typography:
   # Font with improved legibility and readability (https://www.brailleinstitute.org/freefont/)
   fonts:
-    - family: EB Garamond
-      source: google
-      weight: [400, 700]
-      style: [normal, italic]
     - family: JetBrains Mono
       source: google
     - family: Atkinson Hyperlegible Next
@@ -16,7 +12,11 @@ typography:
   base: Atkinson Hyperlegible Next
   monospace: JetBrains Mono
   headings:
-    family: EB Garamond
+    family: Atkinson Hyperlegible Next
+  monospace-block:
+    background-color:
+      light: "#F4F4F5"
+      dark: "#18181B"
 
 # Paul Tol's color palette for colour-blind people (https://sronpersonalpages.nl/~pault/)
 color:
@@ -36,12 +36,6 @@ color:
   primary:
     light: "#a8431b"
     dark: "#c9623a"
-  secondary:
-    light: "#52525B" 
-    dark: "#A1A1AA"  
-  tertiary:
-    light: "#8B8D8E" 
-    dark: "#71717A"  
   success: green
   info: cyan
   warning: sand
@@ -52,11 +46,11 @@ color:
     dark: black
   dark:
     light: black
-    dark: white 
+    dark: white
   # font color
   foreground:
-    light: "#1C1B1B" 
-    dark: "#EEEEEE"  
+    light: "#1C1B1B"
+    dark: "#EEEEEE"
   # background color
   background:
     light: white
@@ -70,7 +64,3 @@ defaults:
       callout-color-tip: "$success"
       callout-color-warning: "$warning"
       callout-color-important: "$danger"
-  # Figures: the order in which series take the palette's
-  # colours, Paul Tol's for his muted scheme.
-  acuity:
-    categorical: [blue, cyan, teal, green, olive, sand, rose, wine, purple]

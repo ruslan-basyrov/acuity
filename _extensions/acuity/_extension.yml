@@ -23,8 +23,8 @@ contributes:
           aspect-ratio: 2.4
           min-height: 10em
           legend-width: 12em
-      filters:
-        - acuity.lua
+      # filters:
+      #   - acuity.lua
       cite-method: citeproc
       lang: en-GB
       citeproc: true
