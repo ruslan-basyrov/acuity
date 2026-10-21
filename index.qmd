@@ -10,16 +10,22 @@ abstract: |
 
 # Typography
 
-Acuity sets body text in Atkinson Hyperlegible Next^[@AtkinsonHyperlegibleFont2019], a typeface designed by the Braille Institute for maximum legibility. Headings use EB Garamond for typographic contrast, and code is set in JetBrains Mono. All three load from Google Fonts.
+Acuity sets body text in Atkinson Hyperlegible Next [@AtkinsonHyperlegibleFont2019], a typeface designed by the Braille Institute for maximum legibility. Headings use EB Garamond for typographic contrast, and code is set in JetBrains Mono. All three load from Google Fonts.
 
 # Color Palette
 
 [Paul Tol's color palette](https://sronpersonalpages.nl/~pault/), designed to remain distinguishable under color-blindness, provides the named swatches.
 
+![The palette, read from `_brand.yml`.](figures/palette.fig.js){#fig-palette .column-margin}
+
+Text on a swatch is set in black or white by how light the color is (@fig-lightness).
+
+![Lightness of each color. Text on a color right of the line is set in black.](figures/lightness.fig.js){#fig-lightness}
+
 Semantic roles — primary, success, warning, danger — are mapped separately in `_brand.yml` and drive callout colors and link accents:
 
 ::: {.callout-note}
-**Info** — cyan `{{< brand color cyan >}}`
+**Note** — primary `{{< brand color primary >}}`
 :::
 
 ::: {.callout-tip}
@@ -33,3 +39,32 @@ Semantic roles — primary, success, warning, danger — are mapped separately i
 ::: {.callout-important}
 **Danger** — wine `{{< brand color wine >}}`
 :::
+
+# Figures
+
+A figure takes the width of its column, or a share of it with `width`. The shared configuration in `_extension.yml` sets its default aspect ratio and the small text size used by figures, legends, notes, and captions in both outputs (@fig-series). Individual figures can override their height when their content needs a different shape.
+
+![Three invented series.](figures/series.fig.js){#fig-series}
+
+![An invented intensity across the whole page.](figures/intensity.fig.js){#fig-intensity .column-page-right}
+
+A legend is drawn above the marks of its figure: swatches for groups (@fig-groups, @fig-symbol), and a ramp for a continuous scale (@fig-sequential, @fig-diverging, @fig-opacity) or for bands (@fig-threshold). A figure without one keeps all its height for the marks (@fig-histogram).
+
+![An invented normal sample.](figures/histogram.fig.js){#fig-histogram}
+
+![Three invented groups.](figures/groups.fig.js){#fig-groups}
+
+![Distance from the centre, as a sequential colour.](figures/sequential.fig.js){#fig-sequential .column-margin}
+
+![The product of the coordinates, as a diverging colour.](figures/diverging.fig.js){#fig-diverging width="60%"}
+
+![Distance from the centre, in bands.](figures/threshold.fig.js){#fig-threshold}
+
+![The groups, as symbols.](figures/symbol.fig.js){#fig-symbol}
+
+![Distance from the vertical axis, as opacity.](figures/opacity.fig.js){#fig-opacity}
+
+
+```{ojs}
+Plot.rectY({length: 1000}, Plot.binX({y: "count"}, {x: d3.randomNormal()})).plot()
+```

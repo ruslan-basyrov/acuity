@@ -62,12 +62,15 @@ color:
     light: white
     dark: black
 
-# Quarto derives callout colors from Bootstrap's $blue/$green/$yellow/$red,
-# not from the semantic roles above. Point them back at the brand.
+# Match Typst's native callout roles in HTML as well.
 defaults:
   bootstrap:
     defaults:
-      callout-color-note: "$info"
+      callout-color-note: "$primary"
       callout-color-tip: "$success"
       callout-color-warning: "$warning"
       callout-color-important: "$danger"
+  # Figures: the order in which series take the palette's
+  # colours, Paul Tol's for his muted scheme.
+  acuity:
+    categorical: [blue, cyan, teal, green, olive, sand, rose, wine, purple]

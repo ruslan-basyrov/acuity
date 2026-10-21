@@ -1,0 +1,5 @@
+/* layout.lua derives this size from acuity.small for both output formats. */
+.column-margin, .column-margin figcaption, .margin-caption, div.aside, aside,
+figcaption, .figure-caption {
+  font-size: var(--acuity-small);
+}
