@@ -2,6 +2,9 @@ website:
   favicon: favicon.svg
   navbar:
     tools:
+      - icon: file-earmark-pdf
+        href: index.pdf
+        aria-label: PDF
       - icon: github
         href: https://github.com/ruslan-basyrov/acuity
     left:

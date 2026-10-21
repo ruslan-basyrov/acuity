@@ -36,6 +36,8 @@ contributes:
       toc: true
       toc-title: "Contents"
       toc-location: body
+      # The PDF link lives in the navbar instead (see _quarto.yml).
+      format-links: false
       page-layout: article
       reference-links: true
       syntax-highlighting: github
