@@ -10,13 +10,14 @@ typography:
       weight: [400, 700]
       style: [normal, italic]
   base: Atkinson Hyperlegible Next
-  monospace: JetBrains Mono
-  headings:
-    family: Atkinson Hyperlegible Next
-  monospace-block:
+  monospace:
+    family: JetBrains Mono
     background-color:
       light: "#F4F4F5"
       dark: "#18181B"
+  headings:
+    family: Atkinson Hyperlegible Next
+
 
 # Paul Tol's color palette for colour-blind people (https://sronpersonalpages.nl/~pault/)
 color:
