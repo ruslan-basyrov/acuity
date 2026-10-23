@@ -1,7 +1,7 @@
 title: Acuity
 author: Ruslan Basyrov
 version: 0.2.0
-quarto-required: ">=1.8.0"
+quarto-required: ">=1.9.0"
 contributes:
   project:
     project:
@@ -11,27 +11,19 @@ contributes:
 
   formats:
     common:
-      # HTML grid in pixels; PDF scales the same proportions to the paper.
-      grid:
-        body-width: 700px
-        margin-width: 400px
-        gutter-width: 75px
-      acuity:
-        # Notes, captions, the text of figures and their legends.
-        small: 0.8em
-        figures:
-          aspect-ratio: 2.4
-          min-height: 10em
-          legend-width: 12em
-      # filters:
-      #   - acuity.lua
+      fig-cap-location: margin
       cite-method: citeproc
       lang: en-GB
       citeproc: true
+      knitr:
+        opts_chunk:
+          out.width: "100%"
 
     html:
-      fontsize: 17px
+      fontsize: 16px
       grid:
+        body-width: 700px
+        margin-width: 400px
         sidebar-width: 0px
       toc: true
       toc-title: "Contents"
@@ -49,11 +41,11 @@ contributes:
     typst:
       fontsize: 10pt
       papersize: a4
-      # The edges of the paper; the margin column sits inside the right one.
       margin:
-        left: 25mm
-        right: 15mm
         top: 25mm
         bottom: 25mm
+      margin-geometry:
+        inner: {far: 20mm, width: 0mm, separation: 0mm}
+        outer: {far: 20mm, width: 60mm, separation: 8mm}
       syntax-highlighting: idiomatic
       theme: [brand]
